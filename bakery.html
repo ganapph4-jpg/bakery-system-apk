@@ -1,0 +1,3200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Main Bakery Report System</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d0d5dd;
+      --soft: #f6f7f9;
+      --panel: #ffffff;
+      --accent: #b45309;
+      --accent-dark: #8a3f08;
+      --good: #067647;
+      --bad: #b42318;
+      --focus: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f2eee7;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 22px;
+      color: #fff;
+      background: #5f370e;
+      box-shadow: 0 2px 16px rgba(31, 41, 51, 0.22);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 8px;
+      background: #f7c873;
+      color: #4a2606;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin-top: 2px;
+      color: #f8e4bd;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .save-status {
+      align-self: center;
+      color: #f8e4bd;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .history-view-status {
+      display: none;
+      align-self: center;
+      color: #fef3c7;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    body.history-viewing .history-view-status {
+      display: inline-block;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.secondary {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.45);
+      background: transparent;
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    button.danger {
+      background: var(--bad);
+    }
+
+    button.success {
+      background: #067647;
+      border-color: #067647;
+    }
+
+    button.success:hover {
+      background: #05603a;
+    }
+
+    button.icon-button {
+      width: 40px;
+      min-width: 40px;
+      padding: 8px;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    button.small {
+      min-height: 30px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .report,
+    .summary-panel,
+    .form-band {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 12px 34px rgba(31, 41, 51, 0.08);
+    }
+
+    .form-band {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 14px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 9px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--focus);
+      outline: 2px solid rgba(37, 99, 235, 0.15);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tab {
+      color: #4b5563;
+      border-color: #d8a35e;
+      background: #fffaf2;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-top: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 4px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    th {
+      position: static;
+      color: #111827;
+      background: #f3e2c2;
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #fff;
+    }
+
+    tbody tr:nth-child(even) td:first-child {
+      background: #fffaf2;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fffaf2;
+    }
+
+    tbody tr:hover {
+      background: #fff3d8;
+    }
+
+    td input {
+      min-height: 40px;
+      padding: 7px 7px;
+      font-size: 15px;
+    }
+
+    .name-head,
+    .name-cell {
+      width: 210px;
+      min-width: 210px;
+      max-width: 210px;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .name-head {
+      color: #111827;
+      background: #f3e2c2;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    th.name-head {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .name-cell {
+      font-weight: 800;
+    }
+
+    .name-cell input {
+      color: #111827;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    tbody tr:nth-child(even) .name-cell input {
+      background: #ffffff;
+    }
+
+    .number {
+      min-width: 64px;
+      text-align: right;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .readonly {
+      background: var(--soft);
+      color: #344054;
+      font-weight: 800;
+    }
+
+    .notes-input {
+      min-width: 92px;
+      color: #111827;
+      background: #ffffff;
+      border-color: var(--line);
+      font-size: 14px;
+    }
+
+    .col-beginning,
+    .col-newQty,
+    .col-end,
+    .col-sold,
+    .col-price,
+    .col-total,
+    .col-waste {
+      width: 74px;
+    }
+
+    .col-notes {
+      width: 105px;
+    }
+
+    .remove-col {
+      width: 76px;
+    }
+
+    .new-input {
+      color: #92400e;
+      background: #fff7ed;
+      border-color: #fdba74;
+    }
+
+    .sold-input {
+      color: #075985;
+      background: #f0f9ff;
+      border-color: #7dd3fc;
+    }
+
+    .total-input {
+      color: #067647;
+      background: #ecfdf3;
+      border-color: #86efac;
+    }
+
+    .notes-input::placeholder {
+      color: #98a2b3;
+    }
+
+    .money {
+      color: var(--good);
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    body.history-viewing .edit-only {
+      display: none;
+    }
+
+    .summary-panel {
+      position: sticky;
+      top: 88px;
+      align-self: start;
+      padding: 14px;
+    }
+
+    .summary-panel h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #eaecf0;
+      padding: 8px 0;
+    }
+
+    .summary-line strong {
+      text-align: right;
+    }
+
+    .summary-line.total {
+      border-top: 2px solid #5f370e;
+      border-bottom: 0;
+      margin-top: 6px;
+      padding-top: 12px;
+      font-size: 19px;
+    }
+
+    .summary-line.highlight {
+      border: 1px solid var(--line);
+      border-left-width: 5px;
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: #fff;
+      box-shadow: 0 5px 14px rgba(31, 41, 51, 0.06);
+    }
+
+    .summary-line.highlight span {
+      color: #111827;
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .summary-line.highlight strong {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .summary-line.gross {
+      border-left-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .summary-line.gross strong {
+      color: #1d4ed8;
+    }
+
+    .summary-line.expense {
+      border-left-color: #b45309;
+      background: #fff7ed;
+    }
+
+    .summary-line.expense strong {
+      color: #92400e;
+    }
+
+    .summary-line.debt {
+      border-left-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .summary-line.debt strong {
+      color: #b42318;
+    }
+
+    .summary-line.cash {
+      border-left-color: #16a34a;
+      background: #ecfdf3;
+    }
+
+    .summary-line.cash strong {
+      color: #067647;
+    }
+
+    .summary-line.money-today {
+      border-left-color: #7c3aed;
+      background: #f5f3ff;
+    }
+
+    .summary-line.money-today strong {
+      color: #5b21b6;
+    }
+
+    .cash-input {
+      border: 2px solid #7c3aed;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-size: 18px;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .debt-input {
+      border: 2px solid #dc2626;
+      background: #fef2f2;
+      color: #b42318;
+      font-size: 18px;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .field-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .expense-list,
+    .debt-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .expense-row,
+    .debt-row {
+      display: grid;
+      grid-template-columns: 1fr 105px 34px;
+      gap: 7px;
+    }
+
+    .expense-row button,
+    .debt-row button {
+      min-height: 36px;
+      padding: 0;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .suggestions-panel {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .suggestions-panel h2 {
+      margin: 0;
+      padding: 12px;
+      color: #111827;
+      background: #eef4ff;
+      font-size: 16px;
+    }
+
+    .suggestions-list {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .suggestion {
+      border-left: 4px solid #2563eb;
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: #f8fafc;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .suggestion strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #111827;
+    }
+
+    .suggestion.warning {
+      border-left-color: #b45309;
+      background: #fff7ed;
+    }
+
+    .suggestion.danger {
+      border-left-color: #b42318;
+      background: #fef2f2;
+    }
+
+    .suggestion.good {
+      border-left-color: #067647;
+      background: #ecfdf3;
+    }
+
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(31, 41, 51, 0.58);
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .settings-modal.open {
+      display: block;
+    }
+
+    .history-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 19;
+      display: none;
+      background: rgba(31, 41, 51, 0.54);
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .history-modal.open {
+      display: block;
+    }
+
+    .password-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      place-items: center;
+      background: rgba(31, 41, 51, 0.64);
+      padding: 18px;
+    }
+
+    .password-modal.open {
+      display: grid;
+    }
+
+    .password-box {
+      width: min(420px, 100%);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    .password-box h2 {
+      margin: 0;
+      padding: 16px;
+      color: #fff;
+      background: #5f370e;
+      font-size: 18px;
+    }
+
+    .password-box-body {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .password-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .settings-page,
+    .history-page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.26);
+      overflow: hidden;
+    }
+
+    .settings-header,
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      color: #fff;
+      background: #5f370e;
+    }
+
+    .settings-header h2,
+    .history-header h2,
+    .settings-section h3 {
+      margin: 0;
+    }
+
+    .settings-header p,
+    .history-header p {
+      margin: 3px 0 0;
+      color: #f8e4bd;
+      font-size: 13px;
+    }
+
+    .settings-body,
+    .history-body {
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+      background: #fbfaf8;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card,
+    .settings-section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .metric-card {
+      padding: 14px;
+    }
+
+    .metric-card:nth-child(1) {
+      border-left: 5px solid #2563eb;
+      background: #eff6ff;
+    }
+
+    .metric-card:nth-child(2) {
+      border-left: 5px solid #067647;
+      background: #ecfdf3;
+    }
+
+    .metric-card:nth-child(3) {
+      border-left: 5px solid #7c3aed;
+      background: #f5f3ff;
+    }
+
+    .metric-card:nth-child(4) {
+      border-left: 5px solid #b45309;
+      background: #fff7ed;
+    }
+
+    .metric-card span {
+      display: block;
+      min-height: 34px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .metric-card strong {
+      display: block;
+      margin-top: 8px;
+      color: #111827;
+      font-size: 22px;
+    }
+
+    .metric-card:nth-child(1) strong {
+      color: #1d4ed8;
+    }
+
+    .metric-card:nth-child(2) strong {
+      color: #067647;
+    }
+
+    .metric-card:nth-child(3) strong {
+      color: #5b21b6;
+    }
+
+    .metric-card:nth-child(4) strong {
+      color: #92400e;
+    }
+
+    .settings-section {
+      overflow: hidden;
+    }
+
+    .settings-section h3 {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf2;
+      font-size: 16px;
+    }
+
+    .settings-table-wrap {
+      overflow-x: auto;
+    }
+
+    .settings-table {
+      min-width: 840px;
+    }
+
+    .settings-table th,
+    .settings-table td {
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+
+    .history-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .history-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-card {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-left: 5px solid #067647;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 5px 14px rgba(31, 41, 51, 0.06);
+    }
+
+    .history-card.active {
+      border-left-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .history-card h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .history-card p {
+      margin: 4px 0 0;
+      color: var(--good);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .history-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .history-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .history-table {
+      min-width: 980px;
+    }
+
+    .history-full-report {
+      display: grid;
+      gap: 14px;
+      padding: 12px;
+    }
+
+    .history-category {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .history-category h4 {
+      margin: 0;
+      padding: 10px 12px;
+      background: #f3e2c2;
+      font-size: 15px;
+    }
+
+    .history-category table {
+      min-width: 900px;
+    }
+
+    .history-extra-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .history-mini-list {
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+    }
+
+    .history-mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #eaecf0;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+
+    .owner-expense-form {
+      display: grid;
+      grid-template-columns: 150px 160px 130px 1fr 130px;
+      gap: 10px;
+      align-items: end;
+      padding: 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--line);
+    }
+
+    #ownerExpenseAmount {
+      border: 2px solid #b45309;
+      background: #fff7ed;
+      color: #92400e;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    #ownerExpenseCategory {
+      border: 2px solid #2563eb;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 800;
+    }
+
+    #ownerExpenseNote {
+      border: 2px solid #7c3aed;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-weight: 800;
+    }
+
+    .owner-tools {
+      display: none;
+      gap: 10px;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .owner-tools.open {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .settings-table td:first-child {
+      position: static;
+      background: transparent;
+    }
+
+    .positive {
+      color: var(--good);
+      font-weight: 900;
+    }
+
+    .negative {
+      color: var(--bad);
+      font-weight: 900;
+    }
+
+    .print-title {
+      display: none;
+    }
+
+    @media (max-width: 1000px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-panel {
+        position: static;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .history-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      header {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .save-status {
+        width: 100%;
+      }
+
+      main {
+        padding: 12px;
+      }
+
+      .form-band {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .history-controls,
+      .history-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .history-card {
+        grid-template-columns: 1fr;
+      }
+
+      .history-card-actions {
+        justify-content: flex-start;
+      }
+
+      .owner-expense-form {
+        grid-template-columns: 1fr;
+      }
+
+      .owner-tools.open {
+        grid-template-columns: 1fr;
+      }
+
+      .history-extra-grid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media print {
+      @page {
+        size: 13in 8.5in;
+        margin: 0.25in;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      header,
+      .tabs,
+      .table-actions,
+      .summary-panel button,
+      .save-status,
+      .remove-col,
+      .note {
+        display: none !important;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 8px;
+        padding: 0;
+      }
+
+      .report,
+      .summary-panel,
+      .form-band {
+        box-shadow: none;
+        border: 0;
+      }
+
+      .form-band {
+        grid-template-columns: 1fr 1fr 1fr;
+        padding: 0 0 8px;
+      }
+
+      table {
+        min-width: 0;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      .summary-panel {
+        position: static;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 0;
+        padding: 0;
+      }
+
+      .print-title {
+        display: block;
+        margin: 0 0 10px;
+        text-align: center;
+      }
+
+      input,
+      textarea,
+      select {
+        border: 0;
+        padding: 0;
+      }
+
+      th,
+      td {
+        padding: 2px;
+        font-size: 9px;
+      }
+
+      td input {
+        min-height: 20px;
+        padding: 1px 2px;
+        font-size: 8px;
+      }
+
+      .name-head,
+      .name-cell {
+        width: 145px;
+        min-width: 145px;
+        max-width: 145px;
+      }
+
+      .col-beginning,
+      .col-newQty,
+      .col-end,
+      .col-sold,
+      .col-price,
+      .col-total,
+      .col-waste {
+        width: 48px;
+      }
+
+      .col-notes {
+        width: 70px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .summary-line,
+      .summary-line.highlight {
+        padding: 5px 7px;
+        font-size: 10px;
+      }
+
+      .summary-line.highlight strong {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">B</div>
+        <div>
+          <h1>Main Bakery Report System</h1>
+          <div class="subhead">Daily sales, bread inventory, drinks, pizza, expenses, debt and cash report</div>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="save-status" id="saveStatus">Auto-save ready</span>
+        <span class="history-view-status" id="historyViewStatus">Viewing finalized report</span>
+        <button type="button" class="secondary" id="reportHistoryBtn">Report History</button>
+        <button type="button" class="secondary" id="backToTodayBtn" style="display:none;">Back to Today</button>
+        <button type="button" class="success" id="submitBtn">Submit Today</button>
+        <button type="button" class="secondary icon-button" id="settingsBtn" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <h2 class="print-title">MAIN BAKERY DAILY REPORT</h2>
+        <div class="form-band">
+          <div>
+            <label for="preparedBy">Name</label>
+            <input id="preparedBy" data-field="preparedBy" placeholder="Staff name">
+          </div>
+          <div>
+            <label for="reportDate">Date</label>
+            <input id="reportDate" data-field="reportDate" type="date">
+          </div>
+          <div>
+            <label for="branch">Branch / Area</label>
+            <input id="branch" data-field="branch" value="Main Bakery">
+          </div>
+        </div>
+
+        <div class="tabs" id="tabs"></div>
+
+        <div class="report">
+          <div class="section-title">
+            <h2 id="sectionHeading">Bread</h2>
+            <div class="table-actions">
+              <button type="button" class="small edit-only" id="addRowBtn">Add Row with Name</button>
+              <button type="button" class="small edit-only" id="editBeginningBtn">Edit Beginning</button>
+              <button type="button" class="small edit-only" id="resetSectionBtn">Reset Section</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <datalist id="itemSuggestions"></datalist>
+            <table>
+              <thead>
+                <tr id="tableHead"></tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <aside class="summary-panel">
+        <h2>Cash Summary</h2>
+        <div class="summary-grid">
+          <div class="summary-line"><span>Bread sales</span><strong id="breadSales">₱0.00</strong></div>
+          <div class="summary-line"><span>Cakes / Grocery sales</span><strong id="cakesSales">₱0.00</strong></div>
+          <div class="summary-line"><span>Pizza sales</span><strong id="pizzaSales">₱0.00</strong></div>
+          <div class="summary-line"><span>Ice Cream sales</span><strong id="iceCreamSales">₱0.00</strong></div>
+          <div class="summary-line"><span>Lako Pandesal sales</span><strong id="haloSales">₱0.00</strong></div>
+          <div class="summary-line"><span>Tapsilog sales</span><strong id="tapsiSales">₱0.00</strong></div>
+          <div class="summary-line highlight gross"><span>Gross sales</span><strong id="grossSales">₱0.00</strong></div>
+          <div class="summary-line highlight expense"><span>Expenses</span><strong id="expensesTotal">₱0.00</strong></div>
+          <div class="summary-line highlight debt"><span>Debt</span><strong id="debtTotal">₱0.00</strong></div>
+          <div class="summary-line highlight cash"><span>Expected cash</span><strong id="cashOnHand">₱0.00</strong></div>
+          <div class="summary-line highlight money-today"><span>Cash on hand</span><strong id="moneyTodayText">₱0.00</strong></div>
+          <div class="summary-line total"><span>Over / Short</span><strong id="overShort">₱0.00</strong></div>
+        </div>
+
+        <div class="field-stack">
+          <div>
+            <label for="moneyTodayInput">Cash on Hand</label>
+            <input id="moneyTodayInput" class="cash-input" data-field="moneyToday" type="number" min="0" step="0.01" value="0">
+          </div>
+        </div>
+
+        <div class="section-title" style="padding:14px 0 0;border-bottom:0;">
+          <h2>Expenses</h2>
+          <button type="button" class="small edit-only" id="addExpenseBtn">Add</button>
+        </div>
+        <div class="expense-list" id="expenseList"></div>
+
+        <div class="section-title" style="padding:14px 0 0;border-bottom:0;">
+          <h2>Debt</h2>
+          <button type="button" class="small edit-only" id="addDebtBtn">Add</button>
+        </div>
+        <div class="debt-list" id="debtList"></div>
+
+        <div class="suggestions-panel">
+          <h2>Advanced Suggestions</h2>
+          <div class="suggestions-list" id="suggestionsList"></div>
+        </div>
+
+        <p class="note">Formula: Sold = Beginning + New - End - Waste. Total = Sold x Price. Expected cash = Gross sales - expenses - debt. Over / Short = Cash on hand - Expected cash.</p>
+      </aside>
+    </main>
+
+    <div class="settings-modal" id="settingsModal" aria-hidden="true">
+      <div class="settings-page">
+        <div class="settings-header">
+          <div>
+            <h2>Daily & Monthly Sales Metrics (Exclusive)</h2>
+            <p>Detailed sales and cash information.</p>
+          </div>
+          <button type="button" class="secondary" id="closeSettingsBtn">Close</button>
+        </div>
+        <div class="settings-body">
+          <div class="metric-grid">
+            <div class="metric-card">
+              <span>Today's Sales (Live/Pending)</span>
+              <strong id="metricTodaySales">₱0.00</strong>
+            </div>
+            <div class="metric-card">
+              <span>Monthly Sales (To Date)</span>
+              <strong id="metricMonthlyProfit">₱0.00</strong>
+            </div>
+            <div class="metric-card">
+              <span>Monthly Cash on Hand</span>
+              <strong id="metricMonthlyCash">₱0.00</strong>
+            </div>
+            <div class="metric-card">
+              <span>Monthly Cash After Owner Expenses</span>
+              <strong id="metricMonthlyCashAfterOwnerExpenses">₱0.00</strong>
+            </div>
+          </div>
+
+          <section class="settings-section">
+            <div class="section-title" style="padding:13px 14px;">
+              <h3>Owner Monthly Expenses</h3>
+            </div>
+            <div class="owner-expense-form">
+              <div>
+                <label for="ownerExpenseDate">Date</label>
+                <input id="ownerExpenseDate" type="date">
+              </div>
+              <div>
+                <label for="ownerExpenseCategory">Category</label>
+                <select id="ownerExpenseCategory">
+                  <option>Supplies</option>
+                  <option>Salary</option>
+                  <option>Rent</option>
+                  <option>Utilities</option>
+                  <option>Delivery</option>
+                  <option>Maintenance</option>
+                  <option>Owner Draw</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="ownerExpenseAmount">Amount</label>
+                <input id="ownerExpenseAmount" type="number" min="0" step="0.01" value="0">
+              </div>
+              <div>
+                <label for="ownerExpenseNote">Notes</label>
+                <input id="ownerExpenseNote" placeholder="Expense note">
+              </div>
+              <button type="button" id="addOwnerExpenseBtn">Add Expense</button>
+            </div>
+            <div class="settings-table-wrap">
+              <table class="settings-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Notes</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ownerExpenseBody"></tbody>
+              </table>
+            </div>
+            <div class="history-mini-list">
+              <div class="history-mini-row"><span>Owner expenses this month</span><strong id="ownerExpenseTotal">₱0.00</strong></div>
+              <div class="history-mini-row"><span>Cash on hand after owner expenses</span><strong id="monthlyAfterOwnerExpenses">₱0.00</strong></div>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <div class="section-title" style="padding:13px 14px;">
+              <h3>Owner Tools</h3>
+              <button type="button" class="small" id="toggleOwnerToolsBtn">Show</button>
+            </div>
+            <div class="owner-tools" id="ownerToolsPanel">
+              <button type="button" id="changePasswordBtn">Change Password</button>
+              <button type="button" id="backupJsonBtn">Backup JSON</button>
+              <button type="button" id="restoreJsonBtn">Restore JSON</button>
+              <input id="restoreJsonInput" type="file" accept="application/json,.json" style="display:none;">
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>Daily Performance History</h3>
+            <div class="settings-table-wrap">
+              <table class="settings-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Total Sales</th>
+                    <th>Cash on Hand</th>
+                    <th>Difference</th>
+                    <th>Owner</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-modal" id="historyModal" aria-hidden="true">
+      <div class="history-page">
+        <div class="history-header">
+          <div>
+            <h2>Report History</h2>
+            <p>Check submitted reports by date.</p>
+          </div>
+          <button type="button" class="secondary" id="closeHistoryBtn">Close</button>
+        </div>
+        <div class="history-body">
+          <div class="history-toolbar">
+            <button type="button" id="setSaveFolderBtn">Set Save Folder</button>
+            <button type="button" class="secondary" id="openOrderLogsBtn">Open Order Logs</button>
+            <span class="note" id="historyStatus">Submitted reports will appear here after using Submit Today.</span>
+          </div>
+
+          <div class="history-list" id="historyList"></div>
+
+          <section class="settings-section">
+            <div class="history-full-report" id="historyDetailBody"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="password-modal" id="passwordModal" aria-hidden="true">
+      <div class="password-box">
+        <h2 id="passwordTitle">Owner Password</h2>
+        <div class="password-box-body">
+          <p class="note" id="passwordMessage">Enter owner password to continue.</p>
+          <div>
+            <label for="passwordInput">Password</label>
+            <input id="passwordInput" type="password" autocomplete="current-password">
+          </div>
+          <div class="password-actions">
+            <button type="button" class="secondary" id="passwordCancelBtn">Cancel</button>
+            <button type="button" id="passwordSubmitBtn">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const money = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' });
+    const reportKey = 'main-bakery-report-v1';
+    const historyKey = 'main-bakery-finalized-reports-v1';
+    const settingsPasswordKey = 'main-bakery-settings-password-v1';
+    const ownerExpensesKey = 'main-bakery-owner-expenses-v1';
+
+    // Paste your Firebase web app config here to turn on online Firestore sync.
+    // Leave these PASTE_ values unchanged if you only want local browser saving.
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBDVQJtXByy8shgrcYOYxKogKXUIFyT0iE',
+      authDomain: 'bakey-1e30b.firebaseapp.com',
+      projectId: 'bakey-1e30b',
+      storageBucket: 'bakey-1e30b.firebasestorage.app',
+      messagingSenderId: '945545979200',
+      appId: '1:945545979200:web:b22f89d1070ff68c1b86a5',
+      measurementId: 'G-B8PK5FY3PL'
+    };
+
+    const bakeryId = 'main-bakery';
+    let firestoreDb = null;
+    let currentReportRef = null;
+    let historyCollectionRef = null;
+    let cloudReady = false;
+    let applyingCloudState = false;
+    let cloudHistoryCache = null;
+    let collection;
+    let doc;
+    let getDoc;
+    let getDocs;
+    let getFirestore;
+    let initializeApp;
+    let onSnapshot;
+    let orderBy;
+    let query;
+    let serverTimestamp;
+    let setDoc;
+    let deleteDoc;
+    let longBondFolderHandle = null;
+    let liveStateBeforeHistoryView = null;
+    let viewingHistoryReportId = '';
+    let viewingHistorySummary = null;
+    let ownerExpenses = JSON.parse(localStorage.getItem(ownerExpensesKey) || '[]');
+    let ownerUnlocked = false;
+    let passwordResolve = null;
+
+    function localDateText(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    const defaults = {
+      bread: {
+        label: 'Bread',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [
+          ['Pandesal', 2], ['Pandesal Lako Deliver', 2.5], ['Pandesal Pack', 17], ['Cheese Bread', 8],
+          ['Pan Monggo', 8], ['Crispy Donut', 8], ['Donut', 8], ['Siakoy', 8], ['Spanish Bread', 8],
+          ['Ensaymada', 8], ['Birdnest', 8], ['Ube/Choco German', 8], ['Peanut Bread', 8],
+          ['Pineapple Bread', 8], ['Mushroom', 5], ['Star Bread', 5], ['Monay', 5],
+          ['Japanese Pie', 8], ['Cookies', 6], ['Crinkles', 8], ['Bagumbayan', 5],
+          ['Hopia Onion', 8], ['Ube Hopia', 8], ['Brownies', 10], ['Yoyo', 8], ['Kababayan', 6],
+          ['Japanese Pie', 8], ['Sweetheart', 7], ['Banana Whole', 95], ['Banana Slice', 8],
+          ['Torta', 13], ['Cupcake', 8], ['Mother Ensay', 60], ['Ube Loaf', 60], ['Cheese Loaf', 30],
+          ['Slice Bread', 60], ['Burger Bun', 25], ['Tostead', 15], ['Halfmoon', 65],
+          ['Plate Mamon', 60], ['Yema/Pandan Cake', 25], ['Binangkal', 8], ['Bavarian', 15],
+          ['Toasted(5)', 12], ['Biscuit Coco', 10], ['Lintoy', 10], ['Egg Pie Whole', 250],
+          ['Egg Pie Slice', 25], ['Chiffon Cake', 0]
+        ]
+      },
+      cakes: {
+        label: 'Cakes / Grocery',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [
+          ['Birthday Cake Square/Round', 400], ['Mountain Dew', 25], ['Pepsi 8 oz', 15], ['Sting', 25],
+          ['Coke/Royal/Sprite 12 oz', 20], ['Mineral 500 ml', 20], ['Mismo Coke/Sprite/Royal', 25],
+          ['3in1 / Milo', 15], ['OK Juice', 10], ['Magnolia Spread', 45], ['Peanut Butter', 50],
+          ['Cup Noodles', 35], ['Curl S Big', 25], ['Curls Small', 12]
+        ]
+      },
+      pizza: {
+        label: 'Pizza',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [
+          ['Ham & Cheese', 135], ['Hawaiian', 140], ['Pepperoni', 145], ['Beef & Mushroom', 165],
+          ['M. Mushroom', 200], ['Hawaiian Overload', 180]
+        ]
+      },
+      iceCream: {
+        label: 'Ice Cream',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [
+          ['Selecta 1.3 L', 295], ['Birthday Baso', 60], ['3in1/2in1', 165], ['450 ML', 105],
+          ['Selecta Road', 175], ['Birthday 3in1', 105], ['Cornetto', 25], ['Boom2x', 20],
+          ['Bitetime', 25], ['Crunchy Max', 20], ['Ice Pop', 10], ['Orange Blast', 15],
+          ['Choco Cups', 20], ['Mango Cups', 20], ['Watermelon', 10], ['Chocky', 10]
+        ]
+      },
+      halo: {
+        label: 'Lako Pandesal',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [['Classic', 99], ['Graham', 99], ['Mango Craze', 99], ['Mais Con Yelo', 99], ['Milenial', 120]]
+      },
+      tapsi: {
+        label: 'Tapsilog',
+        columns: ['name', 'beginning', 'newQty', 'end', 'sold', 'price', 'total', 'waste', 'notes'],
+        rows: [['Pancit Canton', 20], ['Karri w/ Egg', 45], ['Tapsilog', 69], ['Assorted', 0], ['Tapa w/ Rice', 79]]
+      }
+    };
+
+    let state = {
+      active: 'bread',
+      fields: {
+        preparedBy: '',
+        reportDate: localDateText(),
+        branch: 'Main Bakery',
+        moneyToday: 0
+      },
+      expenses: [{ name: 'Bread', amount: 0 }, { name: 'Softdrinks', amount: 0 }, { name: 'Pizza', amount: 0 }],
+      debts: [{ name: '', amount: 0 }],
+      sections: {},
+      beginningUnlocked: true
+    };
+
+    let saveTimer;
+
+    function makeRows(section) {
+      return defaults[section].rows.map(([name, price]) => ({
+        id: crypto.randomUUID(),
+        name,
+        beginning: '',
+        newQty: '',
+        end: '',
+        waste: '',
+        notes: '',
+        soldManual: '',
+        price,
+        totalManual: ''
+      }));
+    }
+
+    function resetAllSections() {
+      Object.keys(defaults).forEach(section => {
+        state.sections[section] = makeRows(section);
+      });
+    }
+
+    resetAllSections();
+
+    function qty(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function calculatedSold(row, columns) {
+      if (!columns.includes('beginning')) {
+        return qty(row.soldManual);
+      }
+      if (row.end === '' || row.end === null || row.end === undefined) {
+        return row.soldManual !== '' ? qty(row.soldManual) : 0;
+      }
+      const hasStockInput = [row.beginning, row.newQty, row.end, row.waste].some(value => value !== '' && value !== null && value !== undefined);
+      if (!hasStockInput && row.soldManual !== '') return qty(row.soldManual);
+      return Math.max(0, qty(row.beginning) + qty(row.newQty) - qty(row.end) - qty(row.waste));
+    }
+
+    function calculatedTotal(row, columns) {
+      if (row.totalManual !== '') return qty(row.totalManual);
+      return calculatedSold(row, columns) * qty(row.price);
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('tabs');
+      tabs.innerHTML = '';
+      Object.entries(defaults).forEach(([key, section]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `tab ${state.active === key ? 'active' : ''}`;
+        button.textContent = section.label;
+        button.addEventListener('click', () => {
+          state.active = key;
+          render();
+        });
+        tabs.appendChild(button);
+      });
+    }
+
+    function renderHead(columns) {
+      const labels = {
+        beginning: 'Beginning',
+        newQty: 'New',
+        name: 'Bread',
+        end: 'End',
+        sold: 'Qty Sold',
+        price: 'Price',
+        total: 'Total',
+        waste: 'WASTE',
+        notes: 'Notes'
+      };
+      document.getElementById('tableHead').innerHTML = columns.map(column => `<th class="${column === 'name' ? 'name-head' : ''} col-${column}">${labels[column]}</th>`).join('') + '<th class="remove-col">Action</th>';
+    }
+
+    function inputCell(row, column, readOnlyValue) {
+      const locked = viewingHistoryReportId ? 'readonly' : '';
+      if (column === 'name') {
+        return `<td class="name-cell"><input value="${escapeHtml(row.name)}" data-id="${row.id}" data-column="name" list="itemSuggestions" ${locked}></td>`;
+      }
+      if (column === 'sold') {
+        const soldValue = readOnlyValue && (row.end === '' || row.end === null || row.end === undefined) ? '' : calculatedSold(row, defaults[state.active].columns);
+        return `<td class="col-sold"><input class="number sold-input ${readOnlyValue || viewingHistoryReportId ? 'readonly' : ''}" type="number" min="0" step="1" value="${soldValue}" data-id="${row.id}" data-column="soldManual" ${readOnlyValue || viewingHistoryReportId ? 'readonly' : ''}></td>`;
+      }
+      if (column === 'total') {
+        const totalValue = defaults[state.active].columns.includes('beginning') && (row.end === '' || row.end === null || row.end === undefined) ? '' : calculatedTotal(row, defaults[state.active].columns).toFixed(2);
+        return `<td class="col-total"><input class="number readonly total-input" value="${totalValue}" data-id="${row.id}" data-column="totalManual" readonly></td>`;
+      }
+      if (column === 'notes') {
+        return `<td class="col-notes"><input class="notes-input" value="${escapeHtml(row.notes || '')}" data-id="${row.id}" data-column="notes" placeholder="Note" ${locked}></td>`;
+      }
+      const value = column === 'newQty' ? row.newQty : row[column];
+      const isBeginningLocked = viewingHistoryReportId || (column === 'beginning' && !state.beginningUnlocked);
+      const colorClass = column === 'newQty' ? 'new-input' : '';
+      return `<td class="col-${column}"><input class="number ${colorClass} ${isBeginningLocked ? 'readonly' : ''}" type="number" min="0" step="0.01" value="${value ?? ''}" data-id="${row.id}" data-column="${column}" ${isBeginningLocked ? 'readonly' : ''}></td>`;
+    }
+
+    function renderRows() {
+      const section = defaults[state.active];
+      const rows = state.sections[state.active];
+      const hasStockFormula = section.columns.includes('beginning');
+      document.getElementById('tableBody').innerHTML = rows.map(row => {
+        const cells = section.columns.map(column => inputCell(row, column, hasStockFormula && column === 'sold')).join('');
+        return `<tr>${cells}<td class="remove-col">${viewingHistoryReportId ? '' : `<button type="button" class="small danger" data-remove="${row.id}">Remove</button>`}</td></tr>`;
+      }).join('');
+    }
+
+    function renderSuggestions() {
+      const suggestions = document.getElementById('itemSuggestions');
+      const names = defaults[state.active].rows.map(([name]) => name);
+      suggestions.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+    }
+
+    function renderFields() {
+      Object.entries(state.fields).forEach(([key, value]) => {
+        const element = document.querySelector(`[data-field="${key}"]`);
+        if (element) element.value = value;
+      });
+    }
+
+    function renderExpenses() {
+      const list = document.getElementById('expenseList');
+      list.innerHTML = state.expenses.map((expense, index) => `
+        <div class="expense-row">
+          <input value="${escapeHtml(expense.name)}" data-expense-index="${index}" data-expense-field="name" placeholder="Expense name" ${viewingHistoryReportId ? 'readonly' : ''}>
+          <input type="number" min="0" step="0.01" value="${expense.amount}" data-expense-index="${index}" data-expense-field="amount" ${viewingHistoryReportId ? 'readonly' : ''}>
+          ${viewingHistoryReportId ? '' : '<button type="button" class="danger" data-expense-remove="' + index + '">×</button>'}
+        </div>
+      `).join('');
+    }
+
+    function renderDebts() {
+      const list = document.getElementById('debtList');
+      list.innerHTML = state.debts.map((debt, index) => `
+        <div class="debt-row">
+          <input value="${escapeHtml(debt.name)}" data-debt-index="${index}" data-debt-field="name" placeholder="Debt name" ${viewingHistoryReportId ? 'readonly' : ''}>
+          <input class="debt-input" type="number" min="0" step="0.01" value="${debt.amount}" data-debt-index="${index}" data-debt-field="amount" ${viewingHistoryReportId ? 'readonly' : ''}>
+          ${viewingHistoryReportId ? '' : '<button type="button" class="danger" data-debt-remove="' + index + '">×</button>'}
+        </div>
+      `).join('');
+    }
+
+    function sectionTotal(sectionKey) {
+      const columns = defaults[sectionKey].columns;
+      return state.sections[sectionKey].reduce((sum, row) => sum + calculatedTotal(row, columns), 0);
+    }
+
+    function summaryValue(summary, key, fallback) {
+      return Object.prototype.hasOwnProperty.call(summary || {}, key) ? qty(summary[key]) : fallback;
+    }
+
+    function updateSummary() {
+      const summary = viewingHistorySummary || {};
+      const categorySales = summary.categorySales || {};
+      const breadSales = summaryValue(summary, 'breadSales', sectionTotal('bread'));
+      const cakesSales = summaryValue(categorySales, 'cakes', sectionTotal('cakes'));
+      const pizzaSales = summaryValue(categorySales, 'pizza', sectionTotal('pizza'));
+      const iceCreamSales = summaryValue(categorySales, 'iceCream', sectionTotal('iceCream'));
+      const haloSales = summaryValue(categorySales, 'halo', sectionTotal('halo'));
+      const tapsiSales = summaryValue(categorySales, 'tapsi', sectionTotal('tapsi'));
+      const otherSales = cakesSales + pizzaSales + iceCreamSales + haloSales + tapsiSales;
+      const gross = summaryValue(summary, 'grossSales', breadSales + otherSales);
+      const expenseTotal = summaryValue(summary, 'expenses', state.expenses.reduce((sum, expense) => sum + qty(expense.amount), 0));
+      const debt = summaryValue(summary, 'debt', state.debts.reduce((sum, debtItem) => sum + qty(debtItem.amount), 0));
+      const cash = summaryValue(summary, 'cashOnHand', gross - expenseTotal - debt);
+      const moneyToday = summaryValue(summary, 'moneyToday', qty(state.fields.moneyToday));
+      const overShort = summaryValue(summary, 'overShort', moneyToday - cash);
+
+      document.getElementById('breadSales').textContent = money.format(breadSales);
+      document.getElementById('cakesSales').textContent = money.format(cakesSales);
+      document.getElementById('pizzaSales').textContent = money.format(pizzaSales);
+      document.getElementById('iceCreamSales').textContent = money.format(iceCreamSales);
+      document.getElementById('haloSales').textContent = money.format(haloSales);
+      document.getElementById('tapsiSales').textContent = money.format(tapsiSales);
+      document.getElementById('grossSales').textContent = money.format(gross);
+      document.getElementById('expensesTotal').textContent = money.format(expenseTotal);
+      document.getElementById('debtTotal').textContent = money.format(debt);
+      document.getElementById('cashOnHand').textContent = money.format(cash);
+      document.getElementById('moneyTodayText').textContent = money.format(moneyToday);
+      const overShortElement = document.getElementById('overShort');
+      overShortElement.textContent = money.format(overShort);
+      overShortElement.style.color = overShort < 0 ? 'var(--bad)' : 'var(--good)';
+      renderSuggestionsPanel();
+      const modal = document.getElementById('settingsModal');
+      if (modal && modal.classList.contains('open') && document.activeElement?.tagName !== 'INPUT') renderSettings();
+    }
+
+    function getSummary() {
+      if (viewingHistorySummary) {
+        return JSON.parse(JSON.stringify(viewingHistorySummary));
+      }
+
+      const breadSales = sectionTotal('bread');
+      const categorySales = {
+        bread: breadSales,
+        cakes: sectionTotal('cakes'),
+        pizza: sectionTotal('pizza'),
+        iceCream: sectionTotal('iceCream'),
+        halo: sectionTotal('halo'),
+        tapsi: sectionTotal('tapsi')
+      };
+      const otherSales = categorySales.cakes + categorySales.pizza + categorySales.iceCream + categorySales.halo + categorySales.tapsi;
+      const grossSales = breadSales + otherSales;
+      const expenses = state.expenses.reduce((sum, expense) => sum + qty(expense.amount), 0);
+      const debt = state.debts.reduce((sum, debtItem) => sum + qty(debtItem.amount), 0);
+      const moneyToday = qty(state.fields.moneyToday);
+      const cashOnHand = grossSales - expenses - debt;
+
+      return {
+        breadSales,
+        categorySales,
+        otherSales,
+        grossSales,
+        expenses,
+        debt,
+        moneyToday,
+        cashOnHand,
+        overShort: moneyToday - cashOnHand
+      };
+    }
+
+    function buildSuggestions() {
+      const suggestions = [];
+      const summary = getSummary();
+
+      if (summary.overShort < 0) {
+        suggestions.push({
+          type: 'danger',
+          title: 'Cash is short',
+          text: `Cash on hand is short by ${money.format(Math.abs(summary.overShort))}. Check expenses, debt, waste, and cash count.`
+        });
+      } else if (summary.overShort > 0) {
+        suggestions.push({
+          type: 'good',
+          title: 'Cash is over',
+          text: `Cash on hand is over by ${money.format(summary.overShort)}. Check if there is unlisted sale or wrong beginning/end count.`
+        });
+      }
+
+      Object.entries(state.sections).forEach(([sectionKey, rows]) => {
+        const section = defaults[sectionKey];
+        rows.forEach(row => {
+          const sold = calculatedSold(row, section.columns);
+          const end = qty(row.end);
+          const waste = qty(row.waste);
+          const totalStock = qty(row.beginning) + qty(row.newQty);
+          const note = String(row.notes || '').toLowerCase();
+
+          if (waste >= 5) {
+            suggestions.push({
+              type: 'warning',
+              title: `${row.name}: high waste`,
+              text: `${waste} item(s) marked as waste. Check production quantity or product quality.`
+            });
+          }
+
+          if (note.includes('damage') || note.includes('damaged') || note.includes('burn') || note.includes('baker')) {
+            suggestions.push({
+              type: 'danger',
+              title: `${row.name}: damage note`,
+              text: `Note says "${row.notes}". Review with baker before next production.`
+            });
+          }
+
+          if (sold >= 10 && end <= 3 && section.columns.includes('end')) {
+            suggestions.push({
+              type: 'good',
+              title: `${row.name}: selling fast`,
+              text: `Sold ${sold} and only ${end} left. Consider adding more tomorrow.`
+            });
+          }
+
+          if (totalStock > 0 && sold === 0 && end > 0) {
+            suggestions.push({
+              type: 'warning',
+              title: `${row.name}: no sales`,
+              text: `No quantity sold today. Consider reducing production or checking display placement.`
+            });
+          }
+        });
+      });
+
+      if (!suggestions.length) {
+        suggestions.push({
+          type: 'good',
+          title: 'Looks balanced',
+          text: 'No cash, waste, stock, or damage warning found right now.'
+        });
+      }
+
+      return suggestions.slice(0, 8);
+    }
+
+    function buildReportSuggestions(report) {
+      const suggestions = [];
+      const summary = report.summary || {};
+
+      if (qty(summary.overShort) < 0) {
+        suggestions.push({
+          type: 'danger',
+          title: 'Cash is short',
+          text: `Cash on hand is short by ${money.format(Math.abs(qty(summary.overShort)))}. Check expenses, debt, waste, and cash count.`
+        });
+      } else if (qty(summary.overShort) > 0) {
+        suggestions.push({
+          type: 'good',
+          title: 'Cash is over',
+          text: `Cash on hand is over by ${money.format(qty(summary.overShort))}. Check if there was an unlisted sale or wrong count.`
+        });
+      }
+
+      Object.entries(report.sections || {}).forEach(([sectionKey, rows]) => {
+        const section = defaults[sectionKey];
+        if (!section) return;
+
+        rows.forEach(row => {
+          const sold = calculatedSold(row, section.columns);
+          const end = qty(row.end);
+          const waste = qty(row.waste);
+          const totalStock = qty(row.beginning) + qty(row.newQty);
+          const note = String(row.notes || '').toLowerCase();
+
+          if (waste >= 5) {
+            suggestions.push({
+              type: 'warning',
+              title: `${row.name}: high waste`,
+              text: `${waste} item(s) marked as waste. Check production quantity or product quality.`
+            });
+          }
+
+          if (note.includes('damage') || note.includes('damaged') || note.includes('burn') || note.includes('baker')) {
+            suggestions.push({
+              type: 'danger',
+              title: `${row.name}: damage note`,
+              text: `Note says "${row.notes}". Review with baker before next production.`
+            });
+          }
+
+          if (sold >= 10 && end <= 3 && section.columns.includes('end')) {
+            suggestions.push({
+              type: 'good',
+              title: `${row.name}: selling fast`,
+              text: `Sold ${sold} and only ${end} left. Consider adding more next report.`
+            });
+          }
+
+          if (totalStock > 0 && sold === 0 && end > 0) {
+            suggestions.push({
+              type: 'warning',
+              title: `${row.name}: no sales`,
+              text: `No quantity sold for this report. Consider reducing production or checking display placement.`
+            });
+          }
+        });
+      });
+
+      if (!suggestions.length) {
+        suggestions.push({
+          type: 'good',
+          title: 'Looks balanced',
+          text: 'No cash, waste, stock, or damage warning found for this saved report.'
+        });
+      }
+
+      return suggestions.slice(0, 8);
+    }
+
+    function renderSuggestionsPanel() {
+      const list = document.getElementById('suggestionsList');
+      if (!list) return;
+
+      list.innerHTML = buildSuggestions().map(item => `
+        <div class="suggestion ${item.type}">
+          <strong>${escapeHtml(item.title)}</strong>
+          <span>${escapeHtml(item.text)}</span>
+        </div>
+      `).join('');
+    }
+
+    function getFinalizedReports() {
+      if (cloudHistoryCache) return cloudHistoryCache;
+      return JSON.parse(localStorage.getItem(historyKey) || '[]');
+    }
+
+    function saveFinalizedReportsLocal(reports) {
+      localStorage.setItem(historyKey, JSON.stringify(reports));
+      cloudHistoryCache = reports;
+    }
+
+    async function saveFinalizedReportOnline(report) {
+      if (!cloudReady || !historyCollectionRef) return;
+
+      try {
+        await setDoc(doc(historyCollectionRef, report.id), {
+          ...report,
+          bakeryId,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        console.error(error);
+        setSaveStatus('History saved locally, online sync failed');
+      }
+    }
+
+    async function initFirestoreSync() {
+      if (!firebaseConfigured()) {
+        setSaveStatus('Local mode: add Firebase config for online sync');
+        return;
+      }
+
+      try {
+        const appModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+        const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+        initializeApp = appModule.initializeApp;
+        collection = firestoreModule.collection;
+        doc = firestoreModule.doc;
+        getDoc = firestoreModule.getDoc;
+        getDocs = firestoreModule.getDocs;
+        getFirestore = firestoreModule.getFirestore;
+        onSnapshot = firestoreModule.onSnapshot;
+        orderBy = firestoreModule.orderBy;
+        query = firestoreModule.query;
+        serverTimestamp = firestoreModule.serverTimestamp;
+        setDoc = firestoreModule.setDoc;
+        deleteDoc = firestoreModule.deleteDoc;
+
+        const app = initializeApp(firebaseConfig);
+        firestoreDb = getFirestore(app);
+        currentReportRef = doc(firestoreDb, 'bakeryApps', bakeryId);
+        historyCollectionRef = collection(firestoreDb, 'bakeryApps', bakeryId, 'history');
+        cloudReady = true;
+
+        const currentSnap = await getDoc(currentReportRef);
+        if (currentSnap.exists() && currentSnap.data().state) {
+          applyingCloudState = true;
+          state = currentSnap.data().state;
+          applyingCloudState = false;
+          await autoRolloverIfNewDay();
+          localStorage.setItem(reportKey, JSON.stringify(state));
+          setSaveStatus('Loaded online report');
+          render();
+        } else {
+          await setDoc(currentReportRef, {
+            bakeryId,
+            state: currentPayload(),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        }
+
+        const historySnap = await getDocs(query(historyCollectionRef, orderBy('finalizedAt', 'desc')));
+        cloudHistoryCache = historySnap.docs.map(item => item.data());
+        localStorage.setItem(historyKey, JSON.stringify(cloudHistoryCache));
+
+        onSnapshot(currentReportRef, async snapshot => {
+          if (!snapshot.exists() || !snapshot.data().state || applyingCloudState) return;
+          const activeElement = document.activeElement;
+          if (activeElement && (activeElement.matches('[data-expense-index]') || activeElement.matches('[data-debt-index]') || activeElement.matches('[data-id]') || activeElement.matches('[data-field]'))) {
+            return;
+          }
+          if (viewingHistoryReportId) {
+            liveStateBeforeHistoryView = snapshot.data().state;
+            return;
+          }
+          applyingCloudState = true;
+          state = snapshot.data().state;
+          applyingCloudState = false;
+          await autoRolloverIfNewDay();
+          localStorage.setItem(reportKey, JSON.stringify(state));
+          render();
+          setSaveStatus('Synced online');
+        });
+
+        onSnapshot(query(historyCollectionRef, orderBy('finalizedAt', 'desc')), snapshot => {
+          cloudHistoryCache = snapshot.docs.map(item => item.data());
+          localStorage.setItem(historyKey, JSON.stringify(cloudHistoryCache));
+          const settingsModal = document.getElementById('settingsModal');
+          const historyModal = document.getElementById('historyModal');
+          if (settingsModal.classList.contains('open')) renderSettings();
+          if (historyModal.classList.contains('open')) renderReportHistory(activeHistoryReportId(), Boolean(activeHistoryReportId()));
+        });
+
+        setSaveStatus('Online sync ready');
+      } catch (error) {
+        console.error(error);
+        setSaveStatus('Firestore setup failed, using local mode');
+      }
+    }
+
+    function reportDateValue(report) {
+      return report.fields?.reportDate || report.finalizedAt?.slice(0, 10) || '';
+    }
+
+    function parseLocalDate(dateText) {
+      return dateText ? new Date(`${dateText}T00:00:00`) : new Date();
+    }
+
+    function formatReportDate(dateText) {
+      return parseLocalDate(dateText).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function formatLongReportDate(dateText) {
+      return parseLocalDate(dateText).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function formatDifference(value) {
+      const amount = Math.abs(value);
+      if (value < 0) return `(${money.format(amount)})`;
+      if (value > 0) return `+${money.format(amount)}`;
+      return money.format(0);
+    }
+
+    function differenceClass(value) {
+      if (value < 0) return 'negative';
+      if (value > 0) return 'positive';
+      return '';
+    }
+
+    function renderSettings() {
+      const todaySummary = getSummary();
+      document.getElementById('ownerExpenseDate').value ||= localDateText();
+      const reports = getFinalizedReports().slice().sort((a, b) => reportDateValue(b).localeCompare(reportDateValue(a)));
+      const reportDate = state.fields.reportDate || localDateText();
+      const currentMonth = reportDate.slice(0, 7);
+      const monthReports = reports.filter(report => reportDateValue(report).slice(0, 7) === currentMonth);
+      const monthlyFinalSales = monthReports.reduce((sum, report) => sum + qty(report.summary?.grossSales), 0);
+      const monthlyFinalCash = monthReports.reduce((sum, report) => sum + qty(report.summary?.moneyToday), 0);
+      const ownerExpenseTotal = ownerExpenses
+        .filter(expense => String(expense.date || '').slice(0, 7) === currentMonth)
+        .reduce((sum, expense) => sum + qty(expense.amount), 0);
+      const monthlyCash = monthlyFinalCash + qty(todaySummary.moneyToday);
+
+      document.getElementById('metricTodaySales').textContent = money.format(todaySummary.grossSales);
+      document.getElementById('metricMonthlyProfit').textContent = money.format(monthlyFinalSales + qty(todaySummary.grossSales));
+      document.getElementById('metricMonthlyCash').textContent = money.format(monthlyCash);
+      document.getElementById('metricMonthlyCashAfterOwnerExpenses').textContent = money.format(monthlyCash - ownerExpenseTotal);
+
+      renderOwnerExpenses(currentMonth, monthlyCash, ownerExpenseTotal);
+
+      const liveRow = {
+        date: `${formatReportDate(reportDate)} (Live)`,
+        sales: todaySummary.grossSales,
+        cash: todaySummary.moneyToday,
+        difference: todaySummary.overShort,
+        editable: false
+      };
+
+      const historyRows = reports.map(report => ({
+        id: report.id,
+        date: formatReportDate(reportDateValue(report)),
+        sales: qty(report.summary?.grossSales),
+        cash: qty(report.summary?.moneyToday),
+        difference: qty(report.summary?.overShort),
+        editable: true
+      }));
+
+      document.getElementById('historyBody').innerHTML = [liveRow, ...historyRows].map(row => `
+        <tr>
+          <td>${escapeHtml(row.date)}</td>
+          <td class="money">${money.format(row.sales)}</td>
+          <td class="money">${money.format(row.cash)}</td>
+          <td class="${differenceClass(row.difference)}">${formatDifference(row.difference)}</td>
+          <td>${row.editable ? `<button type="button" class="small" data-history-edit="${row.id}">Edit</button>` : 'Locked'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOwnerExpenses(currentMonth, monthlySales, ownerExpenseTotal) {
+      const body = document.getElementById('ownerExpenseBody');
+      const rows = ownerExpenses.filter(expense => String(expense.date || '').slice(0, 7) === currentMonth);
+
+      body.innerHTML = rows.length
+        ? rows.map(expense => `
+          <tr>
+            <td>${escapeHtml(formatReportDate(expense.date))}</td>
+            <td>${escapeHtml(expense.category || 'Other')}</td>
+            <td>${escapeHtml(expense.note || expense.name || '')}</td>
+            <td class="money">${money.format(qty(expense.amount))}</td>
+            <td><button type="button" class="small danger" data-owner-expense-delete="${expense.id}">Delete</button></td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="4">No owner monthly expenses yet.</td></tr>';
+
+      document.getElementById('ownerExpenseTotal').textContent = money.format(ownerExpenseTotal);
+      document.getElementById('monthlyAfterOwnerExpenses').textContent = money.format(monthlySales - ownerExpenseTotal);
+    }
+
+    function saveOwnerExpenses() {
+      localStorage.setItem(ownerExpensesKey, JSON.stringify(ownerExpenses));
+      renderSettings();
+      setSaveStatus('Owner expenses updated');
+    }
+
+    function addOwnerExpense() {
+      const date = document.getElementById('ownerExpenseDate').value || localDateText();
+      const category = document.getElementById('ownerExpenseCategory').value || 'Other';
+      const note = document.getElementById('ownerExpenseNote').value.trim();
+      const amount = qty(document.getElementById('ownerExpenseAmount').value);
+
+      if (amount <= 0) {
+        alert('Enter owner expense amount first.');
+        return;
+      }
+
+      ownerExpenses.push({
+        id: crypto.randomUUID(),
+        date,
+        category,
+        note,
+        amount
+      });
+      document.getElementById('ownerExpenseAmount').value = 0;
+      document.getElementById('ownerExpenseNote').value = '';
+      saveOwnerExpenses();
+    }
+
+    function backupJson() {
+      const backup = {
+        version: 1,
+        createdAt: new Date().toISOString(),
+        state,
+        history: getFinalizedReports(),
+        ownerExpenses,
+        settingsPassword: localStorage.getItem(settingsPasswordKey) || ''
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bakery-backup-${localDateText()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function restoreBackupObject(backup) {
+      if (!backup || typeof backup !== 'object') {
+        alert('Invalid backup file.');
+        return;
+      }
+
+      if (!confirm('Restore this backup? This will replace current report, history, and owner expenses on this browser.')) return;
+
+      if (backup.state) {
+        state = backup.state;
+        localStorage.setItem(reportKey, JSON.stringify(state));
+        await saveCurrentReport();
+      }
+
+      if (Array.isArray(backup.history)) {
+        saveFinalizedReportsLocal(backup.history);
+        if (cloudReady && historyCollectionRef) {
+          for (const report of backup.history) {
+            await saveFinalizedReportOnline(report);
+          }
+        }
+      }
+
+      if (Array.isArray(backup.ownerExpenses)) {
+        ownerExpenses = backup.ownerExpenses;
+        localStorage.setItem(ownerExpensesKey, JSON.stringify(ownerExpenses));
+      }
+
+      if (backup.settingsPassword) {
+        localStorage.setItem(settingsPasswordKey, backup.settingsPassword);
+      }
+
+      render();
+      renderSettings();
+      setSaveStatus('Backup restored');
+      alert('Backup restored.');
+    }
+
+    async function changeOwnerPassword() {
+      const newPassword = await openPasswordModal({
+        title: 'Change Owner Password',
+        message: 'Enter the new owner password.',
+        createMode: true
+      });
+      if (newPassword === null) return;
+      if (!newPassword.trim()) {
+        alert('Password cannot be empty.');
+        return;
+      }
+      localStorage.setItem(settingsPasswordKey, newPassword);
+      ownerUnlocked = true;
+      alert('Owner password changed.');
+    }
+
+    function editHistoryReport(reportId) {
+      const reports = getFinalizedReports();
+      const report = reports.find(item => item.id === reportId);
+      if (!report) return;
+
+      const currentSales = qty(report.summary?.grossSales);
+      const currentCash = qty(report.summary?.moneyToday);
+      const currentDifference = qty(report.summary?.overShort);
+
+      const sales = prompt('Edit total sales:', currentSales);
+      if (sales === null) return;
+      const cash = prompt('Edit cash on hand:', currentCash);
+      if (cash === null) return;
+      const difference = prompt('Edit difference:', currentDifference);
+      if (difference === null) return;
+
+      report.summary = {
+        ...(report.summary || {}),
+        grossSales: qty(sales),
+        moneyToday: qty(cash),
+        overShort: qty(difference),
+        ownerEditedAt: new Date().toISOString()
+      };
+
+      saveFinalizedReportsLocal(reports);
+      saveFinalizedReportOnline(report);
+      renderSettings();
+      setSaveStatus('History updated');
+    }
+
+    function openPasswordModal({ title, message, createMode }) {
+      document.getElementById('passwordTitle').textContent = title;
+      document.getElementById('passwordMessage').textContent = message;
+      const input = document.getElementById('passwordInput');
+      input.value = '';
+      input.placeholder = createMode ? 'Create owner password' : 'Enter owner password';
+      const modal = document.getElementById('passwordModal');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      setTimeout(() => input.focus(), 50);
+
+      return new Promise(resolve => {
+        passwordResolve = resolve;
+      });
+    }
+
+    function closePasswordModal(result) {
+      const modal = document.getElementById('passwordModal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      if (passwordResolve) {
+        passwordResolve(result);
+        passwordResolve = null;
+      }
+    }
+
+    async function requireOwnerPassword() {
+      if (ownerUnlocked) return true;
+      const savedPassword = localStorage.getItem(settingsPasswordKey);
+
+      if (!savedPassword) {
+        const newPassword = await openPasswordModal({
+          title: 'Create Owner Password',
+          message: 'Create owner password for Settings and owner actions.',
+          createMode: true
+        });
+        if (newPassword === null) return false;
+        if (!newPassword.trim()) {
+          alert('Password cannot be empty.');
+          return false;
+        }
+        localStorage.setItem(settingsPasswordKey, newPassword);
+        ownerUnlocked = true;
+        alert('Owner password saved.');
+        return true;
+      }
+
+      const enteredPassword = await openPasswordModal({
+        title: 'Owner Password',
+        message: 'Enter owner password to open Settings.',
+        createMode: false
+      });
+      if (enteredPassword === null) return false;
+      if (enteredPassword !== savedPassword) {
+        alert('Wrong password.');
+        return false;
+      }
+      ownerUnlocked = true;
+      return true;
+    }
+
+    async function deleteHistoryReport(reportId) {
+      const reports = getFinalizedReports();
+      const report = reports.find(item => item.id === reportId);
+      if (!report) return;
+      if (!await requireOwnerPassword()) return;
+      if (!confirm(`Delete finalized report for ${formatLongReportDate(reportDateValue(report))}? This removes it from history.`)) return;
+
+      const updatedReports = reports.filter(item => item.id !== reportId);
+      saveFinalizedReportsLocal(updatedReports);
+
+      if (cloudReady && historyCollectionRef && deleteDoc) {
+        try {
+          await deleteDoc(doc(historyCollectionRef, reportId));
+        } catch (error) {
+          console.error(error);
+          setSaveStatus('Deleted locally, online delete failed');
+        }
+      }
+
+      renderReportHistory(updatedReports[0]?.id);
+      renderSettings();
+      setSaveStatus('History report deleted');
+    }
+
+    async function setSaveFolder() {
+      if (!window.showDirectoryPicker) {
+        alert('Your browser does not support choosing a save folder. Use Save Long Bond and choose Save as PDF in the print window.');
+        return;
+      }
+
+      try {
+        longBondFolderHandle = await window.showDirectoryPicker();
+        document.getElementById('historyStatus').textContent = 'Save folder selected for Long Bond reports.';
+      } catch (error) {
+        if (error.name !== 'AbortError') console.error(error);
+      }
+    }
+
+    function reportFileName(report) {
+      return `bakery-report-${reportDateValue(report) || 'date'}.html`;
+    }
+
+    function longBondReportHtml(report) {
+      return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bakery Report ${escapeHtml(formatReportDate(reportDateValue(report)))}</title>
+  <style>
+    @page { size: 13in 8.5in; margin: 0.25in; }
+    * { box-sizing: border-box; }
+    body { width: 13in; min-height: 8.5in; margin: 0 auto; padding: 0.25in; color: #111827; background: #fff; font-family: Arial, Helvetica, sans-serif; }
+    h1 { margin: 0 0 4px; text-align: center; font-size: 17px; }
+    .date { margin: 0 0 8px; text-align: center; font-size: 11px; font-weight: 700; }
+    .history-full-report { display: grid; gap: 8px; }
+    .history-category { border: 1px solid #d0d5dd; border-radius: 4px; overflow: hidden; page-break-inside: avoid; break-inside: avoid; }
+    .history-category h4 { margin: 0; padding: 5px 7px; background: #f3e2c2; font-size: 11px; }
+    .settings-table-wrap { overflow: visible; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #d0d5dd; padding: 2px 3px; font-size: 7.6px; text-align: left; word-break: break-word; }
+    th { background: #f8fafc; }
+    .money { color: #067647; font-weight: 700; text-align: right; }
+    .history-mini-list { display: grid; gap: 3px; padding: 8px; }
+    .history-mini-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eaecf0; padding: 3px 0; font-size: 10px; }
+    .history-extra-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .suggestion { border-left: 3px solid #2563eb; padding: 5px; background: #f8fafc; font-size: 9px; }
+    .suggestion strong { display: block; }
+    .danger, .negative { color: #b42318; }
+    .positive, .good { color: #067647; }
+  </style>
+</head>
+<body>
+  <h1>Main Bakery Daily Report</h1>
+  <div class="date">${escapeHtml(formatLongReportDate(reportDateValue(report)))} - Finalized</div>
+  <div class="history-full-report">${buildHistoryFullReport(report)}</div>
+</body>
+</html>`;
+    }
+
+    function printLongBondReport(report) {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow pop-ups to print or save the Long Bond report.');
+        return;
+      }
+      printWindow.document.open();
+      printWindow.document.write(longBondReportHtml(report));
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 300);
+    }
+
+    function downloadLongBondHtml(report) {
+      const blob = new Blob([longBondReportHtml(report)], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = reportFileName(report);
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function saveLongBondReport(reportId) {
+      const report = getFinalizedReports().find(item => item.id === reportId);
+      if (!report) return;
+
+      if (!longBondFolderHandle) {
+        downloadLongBondHtml(report);
+        return;
+      }
+
+      try {
+        const fileHandle = await longBondFolderHandle.getFileHandle(reportFileName(report), { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(longBondReportHtml(report));
+        await writable.close();
+        document.getElementById('historyStatus').textContent = `Saved ${reportFileName(report)} to selected folder.`;
+      } catch (error) {
+        console.error(error);
+        alert('Could not save to the selected folder. Downloading HTML instead.');
+        downloadLongBondHtml(report);
+      }
+    }
+
+    function viewHistoryReportOnMain(reportId) {
+      const report = getFinalizedReports().find(item => item.id === reportId);
+      if (!report) return;
+
+      if (!viewingHistoryReportId) {
+        liveStateBeforeHistoryView = JSON.parse(JSON.stringify(state));
+      }
+
+      viewingHistoryReportId = reportId;
+      viewingHistorySummary = JSON.parse(JSON.stringify(report.summary || {}));
+      state = {
+        active: 'bread',
+        fields: {
+          ...(report.fields || {}),
+          reportDate: reportDateValue(report),
+          moneyToday: qty(report.summary?.moneyToday)
+        },
+        expenses: JSON.parse(JSON.stringify(report.expenses || [])),
+        debts: JSON.parse(JSON.stringify(report.debts || [])),
+        sections: JSON.parse(JSON.stringify(report.sections || {})),
+        beginningUnlocked: false
+      };
+
+      Object.keys(defaults).forEach(sectionKey => {
+        if (!state.sections[sectionKey]) state.sections[sectionKey] = [];
+      });
+
+      closeReportHistory();
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToTodayReport() {
+      const savedReport = localStorage.getItem(reportKey);
+
+      if (liveStateBeforeHistoryView) {
+        state = liveStateBeforeHistoryView;
+      } else if (savedReport) {
+        state = JSON.parse(savedReport);
+      }
+
+      liveStateBeforeHistoryView = null;
+      viewingHistoryReportId = '';
+      viewingHistorySummary = null;
+      render();
+      setSaveStatus(firebaseConfigured() ? 'Back to live online report' : 'Back to today report');
+    }
+
+    function nextReportDateOffset(dateText, offset) {
+      const date = parseLocalDate(dateText);
+      date.setDate(date.getDate() + offset);
+      return localDateText(date);
+    }
+
+    async function openSettings() {
+      if (!await requireOwnerPassword()) return;
+      renderSettings();
+      const modal = document.getElementById('settingsModal');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSettings() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      ownerUnlocked = false;
+    }
+
+    function openReportHistory() {
+      renderReportHistory('', false);
+      const modal = document.getElementById('historyModal');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeReportHistory() {
+      const modal = document.getElementById('historyModal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function activeHistoryReportId() {
+      return document.querySelector('.history-card.active')?.dataset.reportId || '';
+    }
+
+    function renderReportHistory(selectedId, showDetail = true) {
+      const reports = getFinalizedReports().slice().sort((a, b) => reportDateValue(b).localeCompare(reportDateValue(a)));
+      const list = document.getElementById('historyList');
+      const status = document.getElementById('historyStatus');
+
+      if (!reports.length) {
+        list.innerHTML = '';
+        status.textContent = 'No finalized reports yet. Click Submit Today to save a daily report.';
+        renderHistoryDetail(null);
+        return;
+      }
+
+      const activeId = selectedId || '';
+      status.textContent = `${reports.length} submitted report${reports.length === 1 ? '' : 's'} saved.`;
+
+      list.innerHTML = reports.map(report => {
+        const dateLabel = formatLongReportDate(reportDateValue(report));
+        const mayLabel = formatReportDate(reportDateValue(report));
+        return `
+          <div class="history-card ${report.id === activeId ? 'active' : ''}" data-report-id="${report.id}">
+            <div>
+              <h3>${escapeHtml(dateLabel)}</h3>
+              <p>Finalized</p>
+            </div>
+            <div class="history-card-actions">
+              <button type="button" class="small" data-history-view="${report.id}">View</button>
+              <button type="button" class="small" data-history-save="${report.id}">Save Long Bond</button>
+              <button type="button" class="small" data-history-edit="${report.id}">Owner Edit</button>
+              <button type="button" class="small danger" data-history-delete="${report.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (showDetail && activeId) {
+        renderHistoryDetail(reports.find(report => report.id === activeId));
+      } else {
+        document.getElementById('historyDetailBody').innerHTML = '';
+      }
+    }
+
+    function renderHistoryDetail(report) {
+      const emptyMoney = money.format(0);
+
+      if (!report) {
+        document.getElementById('historyDetailBody').innerHTML = '';
+        return;
+      }
+
+      const summary = report.summary || {};
+
+      document.getElementById('historyDetailBody').innerHTML = buildHistoryFullReport(report);
+    }
+
+    function buildHistoryFullReport(report) {
+      const sectionHtml = Object.entries(defaults).map(([sectionKey, section]) => {
+        const rows = report.sections?.[sectionKey] || [];
+        const columns = section.columns || [];
+
+        return `
+          <div class="history-category">
+            <h4>${escapeHtml(section.label)}</h4>
+            <div class="settings-table-wrap">
+              <table class="settings-table history-table">
+                <thead>
+                  <tr>
+                    <th>Bread / Item</th>
+                    <th>Beginning</th>
+                    <th>New</th>
+                    <th>End</th>
+                    <th>Qty Sold</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>WASTE</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map(row => `
+                    <tr>
+                      <td>${escapeHtml(row.name || '')}</td>
+                      <td>${escapeHtml(row.beginning || '')}</td>
+                      <td>${escapeHtml(row.newQty || '')}</td>
+                      <td>${escapeHtml(row.end || '')}</td>
+                      <td>${calculatedSold(row, columns)}</td>
+                      <td>${money.format(qty(row.price))}</td>
+                      <td class="money">${money.format(calculatedTotal(row, columns))}</td>
+                      <td>${escapeHtml(row.waste || '')}</td>
+                      <td>${escapeHtml(row.notes || '')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        ${sectionHtml}
+        ${buildHistoryExtraLists(report)}
+      `;
+    }
+
+    function buildHistoryExtraLists(report) {
+      const expenses = report.expenses || [];
+      const debts = report.debts || [];
+      const suggestions = buildReportSuggestions(report);
+
+      return `
+        <div class="history-extra-grid">
+          <div class="history-category">
+            <h4>Expenses</h4>
+            <div class="history-mini-list">
+              ${expenses.length ? expenses.map(item => `<div class="history-mini-row"><span>${escapeHtml(item.name || 'Expense')}</span><strong>${money.format(qty(item.amount))}</strong></div>`).join('') : '<div class="history-mini-row"><span>No expenses</span><strong>₱0.00</strong></div>'}
+            </div>
+          </div>
+          <div class="history-category">
+            <h4>Debt</h4>
+            <div class="history-mini-list">
+              ${debts.length ? debts.map(item => `<div class="history-mini-row"><span>${escapeHtml(item.name || 'Debt')}</span><strong>${money.format(qty(item.amount))}</strong></div>`).join('') : '<div class="history-mini-row"><span>No debt</span><strong>₱0.00</strong></div>'}
+            </div>
+          </div>
+          <div class="history-category">
+            <h4>Advanced Suggestions</h4>
+            <div class="history-mini-list">
+              ${suggestions.map(item => `<div class="suggestion ${item.type}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.text)}</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function nextReportDate(dateText) {
+      const date = dateText ? new Date(`${dateText}T00:00:00`) : new Date();
+      date.setDate(date.getDate() + 1);
+      return localDateText(date);
+    }
+
+    async function submitToday() {
+      const reportDate = state.fields.reportDate || localDateText();
+      const finalizedReports = getFinalizedReports().slice();
+
+      const finalizedReport = {
+        id: crypto.randomUUID(),
+        finalizedAt: new Date().toISOString(),
+        fields: JSON.parse(JSON.stringify(state.fields)),
+        expenses: JSON.parse(JSON.stringify(state.expenses)),
+        debts: JSON.parse(JSON.stringify(state.debts)),
+        sections: JSON.parse(JSON.stringify(state.sections)),
+        summary: getSummary()
+      };
+
+      finalizedReports.push(finalizedReport);
+      saveFinalizedReportsLocal(finalizedReports);
+      await saveFinalizedReportOnline(finalizedReport);
+
+      Object.keys(state.sections).forEach(sectionKey => {
+        state.sections[sectionKey] = state.sections[sectionKey].map(row => ({
+          ...row,
+          beginning: row.end || '',
+          newQty: '',
+          end: '',
+          waste: '',
+          notes: '',
+          soldManual: '',
+          totalManual: ''
+        }));
+      });
+
+      state.fields.reportDate = nextReportDate(reportDate);
+      state.fields.moneyToday = 0;
+      state.expenses = [{ name: 'Bread', amount: 0 }, { name: 'Softdrinks', amount: 0 }, { name: 'Pizza', amount: 0 }];
+      state.debts = [{ name: '', amount: 0 }];
+      state.beginningUnlocked = false;
+
+      await saveCurrentReport();
+      render();
+      setSaveStatus(`Submitted ${reportDate}`);
+      alert('Today report submitted. Next report is ready, and every End quantity is now the new Beginning.');
+    }
+
+    function hasReportActivity() {
+      const hasRows = Object.values(state.sections || {}).some(rows => rows.some(row => (
+        row.beginning !== '' ||
+        row.newQty !== '' ||
+        row.end !== '' ||
+        row.waste !== '' ||
+        row.soldManual !== '' ||
+        row.notes
+      )));
+      const hasMoney = qty(state.fields?.moneyToday) > 0;
+      const hasExpenses = (state.expenses || []).some(item => item.name || qty(item.amount) > 0);
+      const hasDebt = (state.debts || []).some(item => item.name || qty(item.amount) > 0);
+      return hasRows || hasMoney || hasExpenses || hasDebt;
+    }
+
+    async function autoRolloverIfNewDay() {
+      const today = localDateText();
+      const reportDate = state.fields.reportDate || today;
+      if (reportDate >= today) return false;
+
+      const finalizedReports = getFinalizedReports().slice();
+      const alreadyFinalized = finalizedReports.some(report => reportDateValue(report) === reportDate);
+
+      if (!alreadyFinalized && hasReportActivity()) {
+        const finalizedReport = {
+          id: crypto.randomUUID(),
+          finalizedAt: new Date().toISOString(),
+          autoFinalized: true,
+          fields: JSON.parse(JSON.stringify(state.fields)),
+          expenses: JSON.parse(JSON.stringify(state.expenses)),
+          debts: JSON.parse(JSON.stringify(state.debts)),
+          sections: JSON.parse(JSON.stringify(state.sections)),
+          summary: getSummary()
+        };
+        finalizedReports.push(finalizedReport);
+        saveFinalizedReportsLocal(finalizedReports);
+        await saveFinalizedReportOnline(finalizedReport);
+      }
+
+      Object.keys(state.sections).forEach(sectionKey => {
+        state.sections[sectionKey] = state.sections[sectionKey].map(row => ({
+          ...row,
+          beginning: row.end || '',
+          newQty: '',
+          end: '',
+          waste: '',
+          notes: '',
+          soldManual: '',
+          totalManual: ''
+        }));
+      });
+
+      state.fields.reportDate = today;
+      state.fields.moneyToday = 0;
+      state.expenses = [{ name: 'Bread', amount: 0 }, { name: 'Softdrinks', amount: 0 }, { name: 'Pizza', amount: 0 }];
+      state.debts = [{ name: '', amount: 0 }];
+      state.beginningUnlocked = false;
+
+      await saveCurrentReport();
+      setSaveStatus(`New daily report started for ${today}`);
+      return true;
+    }
+
+    function setSaveStatus(text) {
+      const status = document.getElementById('saveStatus');
+      if (status) status.textContent = text;
+    }
+
+    function firebaseConfigured() {
+      return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('PASTE_') && firebaseConfig.projectId && !firebaseConfig.projectId.startsWith('PASTE_');
+    }
+
+    function currentPayload() {
+      return JSON.parse(JSON.stringify(state));
+    }
+
+    async function saveCurrentReport() {
+      localStorage.setItem(reportKey, JSON.stringify(state));
+
+      if (!cloudReady || !currentReportRef || applyingCloudState) {
+        setSaveStatus(firebaseConfigured() ? 'Saved locally, waiting for Firestore' : 'Saved locally');
+        return;
+      }
+
+      try {
+        await setDoc(currentReportRef, {
+          bakeryId,
+          state: currentPayload(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        setSaveStatus('Saved online');
+      } catch (error) {
+        console.error(error);
+        setSaveStatus('Saved locally, online sync failed');
+      }
+    }
+
+    function autoSave() {
+      if (viewingHistoryReportId) return;
+      clearTimeout(saveTimer);
+      setSaveStatus('Saving...');
+      saveTimer = setTimeout(() => {
+        saveCurrentReport();
+      }, 1200);
+    }
+
+    function render() {
+      if (state.beginningUnlocked === undefined) state.beginningUnlocked = true;
+      if (state.fields.moneyToday === undefined) state.fields.moneyToday = 0;
+      if (!Array.isArray(state.debts)) state.debts = state.fields.debt ? [{ name: 'Debt', amount: state.fields.debt }] : [{ name: '', amount: 0 }];
+      delete state.fields.deduction;
+      delete state.fields.cashNote;
+      delete state.fields.debt;
+      const section = defaults[state.active];
+      document.getElementById('sectionHeading').textContent = section.label;
+      renderTabs();
+      renderHead(section.columns);
+      renderSuggestions();
+      renderRows();
+      renderFields();
+      renderExpenses();
+      renderDebts();
+      updateSummary();
+      renderSuggestionsPanel();
+      document.getElementById('editBeginningBtn').textContent = state.beginningUnlocked ? 'Lock Beginning' : 'Edit Beginning';
+      document.body.classList.toggle('history-viewing', Boolean(viewingHistoryReportId));
+      document.getElementById('backToTodayBtn').style.display = viewingHistoryReportId ? '' : 'none';
+      document.getElementById('submitBtn').style.display = viewingHistoryReportId ? 'none' : '';
+      document.getElementById('historyViewStatus').textContent = viewingHistoryReportId ? `Viewing finalized report: ${formatLongReportDate(state.fields.reportDate)}` : 'Viewing finalized report';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      })[char]);
+    }
+
+    document.addEventListener('input', event => {
+      const field = event.target.dataset.field;
+      if (field) {
+        if (viewingHistoryReportId) return;
+        state.fields[field] = event.target.value;
+        updateSummary();
+        autoSave();
+        return;
+      }
+
+      const rowId = event.target.dataset.id;
+      const column = event.target.dataset.column;
+      if (rowId && column) {
+        if (viewingHistoryReportId) return;
+        const row = state.sections[state.active].find(item => item.id === rowId);
+        if (row) {
+          row[column] = event.target.value;
+          refreshVisibleCalculation(row, event.target);
+          updateSummary();
+          autoSave();
+        }
+        return;
+      }
+
+      const expenseIndex = event.target.dataset.expenseIndex;
+      const expenseField = event.target.dataset.expenseField;
+      if (expenseIndex !== undefined && expenseField) {
+        if (viewingHistoryReportId) return;
+        state.expenses[Number(expenseIndex)][expenseField] = event.target.value;
+        updateSummary();
+        autoSave();
+        return;
+      }
+
+      const debtIndex = event.target.dataset.debtIndex;
+      const debtField = event.target.dataset.debtField;
+      if (debtIndex !== undefined && debtField) {
+        if (viewingHistoryReportId) return;
+        state.debts[Number(debtIndex)][debtField] = event.target.value;
+        updateSummary();
+        autoSave();
+      }
+    });
+
+    function refreshVisibleCalculation(row, input) {
+      const currentRow = input.closest('tr');
+      if (!currentRow) return;
+
+      const columns = defaults[state.active].columns;
+      const soldInput = currentRow.querySelector('[data-column="soldManual"]');
+      const totalInput = currentRow.querySelector('[data-column="totalManual"]');
+
+      if (soldInput && soldInput !== input) {
+        soldInput.value = columns.includes('beginning') && (row.end === '' || row.end === null || row.end === undefined) ? '' : calculatedSold(row, columns);
+      }
+
+      if (totalInput) {
+        totalInput.value = columns.includes('beginning') && (row.end === '' || row.end === null || row.end === undefined) ? '' : calculatedTotal(row, columns).toFixed(2);
+      }
+    }
+
+    document.addEventListener('click', async event => {
+      const historyView = event.target.dataset.historyView;
+      if (historyView) {
+        viewHistoryReportOnMain(historyView);
+        return;
+      }
+
+      const historySave = event.target.dataset.historySave;
+      if (historySave) {
+        saveLongBondReport(historySave);
+        return;
+      }
+
+      const historyEdit = event.target.dataset.historyEdit;
+      if (historyEdit) {
+        if (await requireOwnerPassword()) editHistoryReport(historyEdit);
+        return;
+      }
+
+      const historyDelete = event.target.dataset.historyDelete;
+      if (historyDelete) {
+        deleteHistoryReport(historyDelete);
+        return;
+      }
+
+      const ownerExpenseDelete = event.target.dataset.ownerExpenseDelete;
+      if (ownerExpenseDelete) {
+        if (!await requireOwnerPassword()) return;
+        ownerExpenses = ownerExpenses.filter(expense => expense.id !== ownerExpenseDelete);
+        saveOwnerExpenses();
+        return;
+      }
+
+      const removeId = event.target.dataset.remove;
+      if (removeId) {
+        state.sections[state.active] = state.sections[state.active].filter(row => row.id !== removeId);
+        render();
+        autoSave();
+        return;
+      }
+
+      const expenseRemove = event.target.dataset.expenseRemove;
+      if (expenseRemove !== undefined) {
+        state.expenses.splice(Number(expenseRemove), 1);
+        render();
+        autoSave();
+        return;
+      }
+
+      const debtRemove = event.target.dataset.debtRemove;
+      if (debtRemove !== undefined) {
+        state.debts.splice(Number(debtRemove), 1);
+        render();
+        autoSave();
+        return;
+      }
+    });
+
+    document.getElementById('addRowBtn').addEventListener('click', () => {
+      const itemName = prompt('Enter item name:');
+      if (!itemName) return;
+      state.sections[state.active].push({
+        id: crypto.randomUUID(),
+        name: itemName,
+        beginning: '',
+        newQty: '',
+        end: '',
+        waste: '',
+        notes: '',
+        soldManual: '',
+        price: 0,
+        totalManual: ''
+      });
+      render();
+      autoSave();
+    });
+
+    document.getElementById('resetSectionBtn').addEventListener('click', () => {
+      if (confirm('Reset this section back to the original item list?')) {
+        state.sections[state.active] = makeRows(state.active);
+        render();
+        autoSave();
+      }
+    });
+
+    document.getElementById('editBeginningBtn').addEventListener('click', async () => {
+      if (!await requireOwnerPassword()) return;
+      state.beginningUnlocked = !state.beginningUnlocked;
+      render();
+      autoSave();
+    });
+
+    document.getElementById('addExpenseBtn').addEventListener('click', () => {
+      state.expenses.push({ name: '', amount: 0 });
+      render();
+      autoSave();
+    });
+
+    document.getElementById('addDebtBtn').addEventListener('click', () => {
+      state.debts.push({ name: '', amount: 0 });
+      render();
+      autoSave();
+    });
+
+    document.getElementById('reportHistoryBtn').addEventListener('click', openReportHistory);
+
+    document.getElementById('backToTodayBtn').addEventListener('click', backToTodayReport);
+
+    document.getElementById('closeHistoryBtn').addEventListener('click', closeReportHistory);
+
+    document.getElementById('setSaveFolderBtn').addEventListener('click', setSaveFolder);
+
+    document.getElementById('openOrderLogsBtn').addEventListener('click', () => {
+      document.getElementById('historyList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.getElementById('historyModal').addEventListener('click', event => {
+      if (event.target.id === 'historyModal') closeReportHistory();
+    });
+
+    document.getElementById('settingsBtn').addEventListener('click', openSettings);
+
+    document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
+
+    document.getElementById('addOwnerExpenseBtn').addEventListener('click', () => {
+      addOwnerExpense();
+    });
+
+    document.getElementById('toggleOwnerToolsBtn').addEventListener('click', () => {
+      const panel = document.getElementById('ownerToolsPanel');
+      panel.classList.toggle('open');
+      document.getElementById('toggleOwnerToolsBtn').textContent = panel.classList.contains('open') ? 'Hide' : 'Show';
+    });
+
+    document.getElementById('changePasswordBtn').addEventListener('click', changeOwnerPassword);
+
+    document.getElementById('backupJsonBtn').addEventListener('click', backupJson);
+
+    document.getElementById('restoreJsonBtn').addEventListener('click', () => {
+      document.getElementById('restoreJsonInput').click();
+    });
+
+    document.getElementById('restoreJsonInput').addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const backup = JSON.parse(await file.text());
+        await restoreBackupObject(backup);
+      } catch (error) {
+        console.error(error);
+        alert('Could not read backup JSON.');
+      } finally {
+        event.target.value = '';
+      }
+    });
+
+    document.getElementById('passwordSubmitBtn').addEventListener('click', () => {
+      closePasswordModal(document.getElementById('passwordInput').value);
+    });
+
+    document.getElementById('passwordCancelBtn').addEventListener('click', () => {
+      closePasswordModal(null);
+    });
+
+    document.getElementById('passwordInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') closePasswordModal(event.target.value);
+      if (event.key === 'Escape') closePasswordModal(null);
+    });
+
+    document.getElementById('passwordModal').addEventListener('click', event => {
+      if (event.target.id === 'passwordModal') closePasswordModal(null);
+    });
+
+    document.getElementById('settingsModal').addEventListener('click', event => {
+      if (event.target.id === 'settingsModal') closeSettings();
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      if (confirm('Submit and finalize today? This saves today report and starts the next report using End as Beginning.')) {
+        submitToday();
+      }
+    });
+
+    const savedReport = localStorage.getItem(reportKey);
+    if (savedReport) {
+      state = JSON.parse(savedReport);
+      setSaveStatus('Loaded saved report');
+    }
+
+    await autoRolloverIfNewDay();
+    render();
+    initFirestoreSync();
+
+    setInterval(async () => {
+      const changed = await autoRolloverIfNewDay();
+      if (changed) render();
+    }, 60000);
+
+    window.addEventListener('focus', async () => {
+      const changed = await autoRolloverIfNewDay();
+      if (changed) render();
+    });
+
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        const changed = await autoRolloverIfNewDay();
+        if (changed) render();
+      }
+    });
+
+    document.addEventListener('pointerdown', async () => {
+      const changed = await autoRolloverIfNewDay();
+      if (changed) render();
+    }, { once: true });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>

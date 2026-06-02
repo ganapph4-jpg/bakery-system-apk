@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance & Payroll System</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <style>
+    :root {
+      --black: #0b1220;
+      --ink: #172033;
+      --muted: #64748b;
+      --green: #16a34a;
+      --green-dark: #08733a;
+      --blue: #2563eb;
+      --blue-dark: #1e40af;
+      --red: #dc2626;
+      --yellow: #f59e0b;
+      --line: #d9e3ef;
+      --paper: #ffffff;
+      --soft-green: #effdf4;
+      --soft-blue: #eff6ff;
+      --soft-yellow: #fffbeb;
+      --soft-red: #fff1f2;
+      --bg: #eef7f1;
+      --shadow: 0 18px 40px rgba(11, 18, 32, 0.12);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(22, 163, 74, 0.14), rgba(37, 99, 235, 0.12)),
+        var(--bg);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      border-radius: 8px;
+      color: white;
+      background: linear-gradient(135deg, var(--black), #102a1d);
+      box-shadow: var(--shadow);
+    }
+
+    .gear-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      color: white;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      font-size: 24px;
+      font-weight: 900;
+      box-shadow: none;
+    }
+
+    .gear-btn:hover {
+      background: rgba(255, 255, 255, 0.20);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #bbf7d0;
+      font-weight: 700;
+    }
+
+    .actions,
+    .nav,
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .actions {
+      justify-content: flex-end;
+    }
+
+    .btn {
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-weight: 900;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.20);
+    }
+
+    .btn:hover {
+      filter: brightness(0.98);
+    }
+
+    .btn.green {
+      background: var(--green);
+      box-shadow: 0 10px 20px rgba(22, 163, 74, 0.20);
+    }
+
+    .btn.black {
+      background: var(--black);
+      box-shadow: none;
+    }
+
+    .btn.red {
+      background: var(--red);
+      box-shadow: none;
+    }
+
+    .btn.light {
+      color: var(--black);
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .nav {
+      margin: 14px 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 10px 24px rgba(11, 18, 32, 0.08);
+    }
+
+    .nav button {
+      flex: 1 1 150px;
+      min-height: 46px;
+      border-radius: 6px;
+      color: var(--black);
+      background: transparent;
+      font-weight: 900;
+    }
+
+    .nav button.active {
+      color: white;
+      background: var(--black);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .two-col {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      align-items: start;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, #f8fffb, #eef5ff);
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0;
+      color: var(--black);
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .metric {
+      min-height: 118px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-left: 7px solid var(--green);
+      border-radius: 8px;
+      background: var(--soft-green);
+      box-shadow: 0 10px 22px rgba(11, 18, 32, 0.06);
+    }
+
+    .metric.blue {
+      border-left-color: var(--blue);
+      background: var(--soft-blue);
+    }
+
+    .metric.black {
+      border-left-color: var(--black);
+      background: #f8fafc;
+    }
+
+    .metric.yellow {
+      border-left-color: var(--yellow);
+      background: var(--soft-yellow);
+    }
+
+    .metric.red {
+      border-left-color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .value {
+      margin-top: 8px;
+      color: var(--black);
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 900;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 9px 10px;
+      color: var(--black);
+      background: white;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 10px 8px;
+      color: white;
+      background: var(--black);
+      text-align: left;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: white;
+      vertical-align: middle;
+    }
+
+    tr:nth-child(even) td {
+      background: #fbfdff;
+    }
+
+    .name-input {
+      min-width: 170px;
+      font-weight: 900;
+    }
+
+    .small {
+      min-width: 82px;
+    }
+
+    .money {
+      min-width: 96px;
+      color: var(--blue-dark);
+      font-weight: 900;
+    }
+
+    .status {
+      min-width: 128px;
+      font-weight: 900;
+    }
+
+    .status.all {
+      color: var(--green-dark);
+      background: var(--soft-green);
+    }
+
+    .status.half {
+      color: #a16207;
+      background: var(--soft-yellow);
+    }
+
+    .status.ot {
+      color: var(--blue-dark);
+      background: var(--soft-blue);
+    }
+
+    .status.absent {
+      color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .status.dayoff {
+      color: #475569;
+      background: #f1f5f9;
+    }
+
+    .computed {
+      min-width: 104px;
+      color: var(--green-dark);
+      background: var(--soft-green) !important;
+      font-weight: 900;
+    }
+
+    .computed.blue {
+      color: var(--blue-dark);
+      background: var(--soft-blue) !important;
+    }
+
+    .attendance-table {
+      min-width: 980px;
+    }
+
+    .attendance-table th {
+      padding: 8px 6px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .attendance-table td {
+      padding: 5px;
+    }
+
+    .attendance-table input,
+    .attendance-table select {
+      min-height: 34px;
+      padding: 6px 7px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .attendance-table .name-input {
+      min-width: 145px;
+    }
+
+    .attendance-table .position-input {
+      min-width: 105px;
+    }
+
+    .attendance-table .status {
+      min-width: 104px;
+    }
+
+    .attendance-table .small {
+      min-width: 66px;
+    }
+
+    .attendance-table .money {
+      min-width: 82px;
+    }
+
+    .attendance-table .computed {
+      min-width: 88px;
+      padding: 8px 6px;
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .attendance-table .date-cell {
+      min-width: 76px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .attendance-table .note-input {
+      min-width: 90px;
+    }
+
+    .attendance-table .row-actions {
+      flex-wrap: nowrap;
+      justify-content: center;
+    }
+
+    .attendance-table .icon-btn {
+      min-width: 32px;
+      min-height: 32px;
+      border-radius: 5px;
+    }
+
+    .attendance-table input:disabled,
+    .attendance-table select:disabled {
+      color: #475569;
+      background: #f1f5f9;
+      opacity: 1;
+      cursor: not-allowed;
+    }
+
+    .attendance-table button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .sheet-table {
+      min-width: 1320px;
+    }
+
+    .sheet-table th,
+    .sheet-table td {
+      text-align: center;
+    }
+
+    .sheet-table .sheet-name {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-width: 170px;
+      text-align: left;
+      background: white;
+      font-weight: 900;
+    }
+
+    .sheet-table th.sheet-name {
+      z-index: 3;
+      color: white;
+      background: var(--black);
+    }
+
+    .sheet-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 38px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .sheet-cell.all {
+      color: var(--green-dark);
+      background: var(--soft-green);
+    }
+
+    .sheet-cell.half {
+      color: #a16207;
+      background: var(--soft-yellow);
+    }
+
+    .sheet-cell.ot {
+      color: var(--blue-dark);
+      background: var(--soft-blue);
+    }
+
+    .sheet-cell.absent {
+      color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .sheet-cell.dayoff {
+      color: #475569;
+      background: #f1f5f9;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .icon-btn {
+      min-width: 38px;
+      min-height: 38px;
+      border-radius: 6px;
+      color: white;
+      background: var(--blue);
+      font-weight: 900;
+    }
+
+    .icon-btn.red {
+      background: var(--red);
+    }
+
+    .cards {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .card strong {
+      color: var(--black);
+    }
+
+    .card-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: var(--green-dark);
+      background: var(--soft-green);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .badge.red {
+      color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .badge.blue {
+      color: var(--blue-dark);
+      background: var(--soft-blue);
+    }
+
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .payroll-total {
+      padding: 18px;
+      border-radius: 8px;
+      color: white;
+      background: linear-gradient(135deg, var(--black), var(--green-dark));
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(11, 18, 32, 0.58);
+    }
+
+    #confirmModal {
+      z-index: 40;
+    }
+
+    #passwordModal,
+    #settingsModal {
+      z-index: 30;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: min(440px, 100%);
+      overflow: hidden;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 25px 70px rgba(11, 18, 32, 0.35);
+    }
+
+    .modal-box.wide {
+      width: min(720px, 100%);
+    }
+
+    .modal-head {
+      padding: 16px;
+      color: white;
+      background: linear-gradient(135deg, var(--black), var(--red));
+    }
+
+    .modal.success .modal-head {
+      background: linear-gradient(135deg, var(--black), var(--green));
+    }
+
+    .modal.success #confirmOkBtn {
+      background: var(--green);
+    }
+
+    .modal-head h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .modal-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 16px 16px;
+      background: #f8fafc;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .settings-tool {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .settings-tool h4 {
+      margin: 0;
+      color: var(--black);
+      font-size: 16px;
+    }
+
+    .settings-tool p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard-grid,
+      .two-col,
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 10px;
+      }
+
+      .topbar,
+      .dashboard-grid,
+      .two-col,
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        justify-content: stretch;
+      }
+
+      .actions .btn,
+      .nav button {
+        flex: 1 1 100%;
+      }
+
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div>
+        <h1>Attendance & Payroll</h1>
+        <p class="subtitle">Dashboard, attendance, payroll, employees, and history in one HTML</p>
+      </div>
+      <button class="gear-btn" id="settingsGearBtn" title="Settings" aria-label="Settings">⚙</button>
+    </section>
+
+    <nav class="nav" aria-label="Main pages">
+      <button class="active" data-page-btn="dashboard">Dashboard</button>
+      <button data-page-btn="attendance">Attendance</button>
+      <button data-page-btn="sheet">Attendance Sheet</button>
+      <button data-page-btn="payroll">Payroll</button>
+      <button data-page-btn="employees">Employees</button>
+      <button data-page-btn="history">History</button>
+    </nav>
+
+    <section class="page active" id="page-dashboard">
+      <div class="grid dashboard-grid">
+        <div class="metric">
+          <div class="label">All Day</div>
+          <div class="value" id="dashAllDay">0</div>
+          <p class="hint">Full day workers today</p>
+        </div>
+        <div class="metric yellow">
+          <div class="label">Half Day</div>
+          <div class="value" id="dashHalfDay">0</div>
+          <p class="hint">Half day counted as 0.5</p>
+        </div>
+        <div class="metric blue">
+          <div class="label">Overtime</div>
+          <div class="value" id="dashOvertime">0</div>
+          <p class="hint">Workers with overtime</p>
+        </div>
+        <div class="metric red">
+          <div class="label">Absent</div>
+          <div class="value" id="dashAbsent">0</div>
+          <p class="hint">Absent today</p>
+        </div>
+        <div class="metric">
+          <div class="label">Day Off</div>
+          <div class="value" id="dashDayOff">0</div>
+          <p class="hint">Scheduled rest day</p>
+        </div>
+        <div class="metric black">
+          <div class="label">Gross Payroll</div>
+          <div class="value" id="dashGross">PHP 0.00</div>
+          <p class="hint">Before debt deduction</p>
+        </div>
+        <div class="metric yellow">
+          <div class="label">Debt / Advance</div>
+          <div class="value" id="dashDebt">PHP 0.00</div>
+          <p class="hint">Deducted from salary</p>
+        </div>
+        <div class="metric blue">
+          <div class="label">Total Salary</div>
+          <div class="value" id="dashSalary">PHP 0.00</div>
+          <p class="hint">Final salary payable</p>
+        </div>
+        <div class="metric">
+          <div class="label">Active Employees</div>
+          <div class="value" id="dashEmployees">0</div>
+          <p class="hint">Saved employee profiles</p>
+        </div>
+      </div>
+
+      <div class="grid two-col" style="margin-top:14px;">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="panel-body">
+            <div class="actions">
+              <button class="btn green" data-open-page="attendance">Open Attendance</button>
+              <button class="btn light" data-open-page="sheet">Monthly Sheet</button>
+              <button class="btn" data-open-page="payroll">Generate Payroll</button>
+              <button class="btn black" data-open-page="employees">Manage Employees</button>
+              <button class="btn light" data-open-page="history">View History</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Recent History</h2>
+          </div>
+          <div class="panel-body">
+            <div class="cards" id="dashboardHistory"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-attendance">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Daily Attendance</h2>
+          <div class="actions">
+            <span class="badge" id="attendanceLockBadge">Open</span>
+            <input type="date" id="attendanceDate" style="width:180px;">
+            <button class="btn green" id="attendanceFinalizeBtn">Finalize Day</button>
+            <button class="btn black" id="attendanceOwnerEditBtn" style="display:none;">Owner Edit</button>
+            <button class="btn light" id="attendanceNewDateBtn">New Day</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Option</th>
+                <th>Night OT</th>
+                <th>Daily Rate</th>
+                <th>OT Rate</th>
+                <th>Gross Pay</th>
+                <th>Debt</th>
+                <th>Total Salary</th>
+                <th>Notes</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-sheet">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Monthly Attendance Sheet</h2>
+            <p class="hint">View employee attendance one day at a time from 1 to 30/31.</p>
+          </div>
+          <div class="actions">
+            <input type="month" id="sheetMonth" style="width:180px;">
+            <button class="btn green" id="renderSheetBtn">Show Sheet</button>
+            <button class="btn black" id="sheetCsvBtn">Download Sheet CSV</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="legend">
+            <span class="sheet-cell all">A</span> All Day
+            <span class="sheet-cell half">H</span> Half Day
+            <span class="sheet-cell ot">OT</span> Overtime
+            <span class="sheet-cell absent">X</span> Absent
+            <span class="sheet-cell dayoff">D</span> Day Off
+            <span class="sheet-cell">-</span> No record
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="sheet-table">
+            <thead id="attendanceSheetHead"></thead>
+            <tbody id="attendanceSheetBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-payroll">
+      <div class="grid two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Payroll Generator</h2>
+            <div class="actions">
+              <select id="payrollRange" style="width:210px;">
+                <option value="today">Today only</option>
+                <option value="firstHalf">1-15 days</option>
+                <option value="secondHalf">16-30/31 days</option>
+                <option value="month" selected>This month</option>
+                <option value="all">All saved days + today</option>
+              </select>
+              <button class="btn green" id="generatePayrollBtn">Generate Payroll</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="payroll-total" id="payrollGrandTotal">PHP 0.00</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Days</th>
+                  <th>Night OT</th>
+                  <th>Rate</th>
+                  <th>Gross Pay</th>
+                  <th>Debt</th>
+                  <th>Total Salary</th>
+                </tr>
+              </thead>
+              <tbody id="payrollBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Payroll Summary</h2>
+          </div>
+          <div class="panel-body grid">
+            <div class="metric black">
+              <div class="label">Gross Pay</div>
+              <div class="value" id="payGross">PHP 0.00</div>
+            </div>
+            <div class="metric yellow">
+              <div class="label">Total Debt</div>
+              <div class="value" id="payDebt">PHP 0.00</div>
+            </div>
+            <div class="metric blue">
+              <div class="label">Final Salary</div>
+              <div class="value" id="paySalary">PHP 0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-employees">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Employees</h2>
+          <span class="badge" id="employeeCountBadge">0 Active</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <input id="employeeName" placeholder="Employee name">
+            <input id="employeePosition" placeholder="Position">
+            <input id="employeeContact" placeholder="Contact number">
+            <input id="employeeStartDate" type="date">
+            <input id="employeeRate" type="number" min="0" step="0.01" placeholder="Daily rate">
+            <input id="employeeNightOtRate" type="number" min="0" step="0.01" placeholder="Night OT rate/hour">
+            <select id="employeeStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button class="btn green" id="addEmployeeBtn">Add Employee</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Contact</th>
+                <th>Start Date</th>
+                <th>Daily Rate</th>
+                <th>Night OT Rate</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="employeesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-history">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Attendance History</h2>
+          <div class="actions">
+            <button class="btn green" id="historyFinalizeBtn">Finalize Today</button>
+            <button class="btn red" id="clearHistoryBtn">Clear History</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="cards" id="historyList"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">Auto-save is on. No login page. <span id="cloudStatus">Connecting online sync...</span></div>
+  </main>
+
+  <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="confirmTitle">Confirm Delete</h3>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage">Are you sure?</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn light" id="confirmCancelBtn">Cancel</button>
+        <button class="btn red" id="confirmOkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="passwordModal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="passwordTitle">Owner Password</h3>
+      </div>
+      <div class="modal-body">
+        <p>Enter password to open Settings.</p>
+        <div style="height:10px;"></div>
+        <input id="settingsPasswordInput" type="password" placeholder="Password">
+        <p class="hint" id="passwordError" style="display:none;color:var(--red);font-weight:900;margin-top:10px;">Wrong password. Please try again.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn light" id="passwordCancelBtn">Cancel</button>
+        <button class="btn green" id="passwordOpenBtn">Open Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-box wide">
+      <div class="modal-head">
+        <h3 id="settingsTitle">Settings</h3>
+      </div>
+      <div class="modal-body">
+        <div class="settings-grid">
+          <div class="settings-tool">
+            <h4>Change Password</h4>
+            <p>Default password is admin. Change it for owner-only tools.</p>
+            <input id="newPasswordInput" type="password" placeholder="New password">
+            <input id="confirmPasswordInput" type="password" placeholder="Confirm password">
+            <button class="btn green" id="changePasswordBtn">Change Password</button>
+          </div>
+          <div class="settings-tool">
+            <h4>Backup JSON</h4>
+            <p>Download all employees, attendance, payroll history, and settings.</p>
+            <button class="btn black" id="backupJsonBtn">Backup JSON</button>
+          </div>
+          <div class="settings-tool">
+            <h4>Restore JSON</h4>
+            <p>Restore from a backup file. This replaces current saved data.</p>
+            <button class="btn" id="restoreJsonBtn">Restore JSON</button>
+            <input id="restoreJsonInput" type="file" accept="application/json,.json" style="display:none;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn light" id="settingsCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APP_KEY = 'bakery-attendance-suite-v2';
+    const OLD_CURRENT_KEY = 'bakery-attendance-current-v1';
+    const OLD_HISTORY_KEY = 'bakery-attendance-history-v1';
+    const PASSWORD_KEY = 'bakery-attendance-settings-password-v1';
+    const attendanceAppId = 'main-attendance';
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBDVQJtXByy8shgrcYOYxKogKXUIFyT0iE',
+      authDomain: 'bakey-1e30b.firebaseapp.com',
+      projectId: 'bakey-1e30b',
+      storageBucket: 'bakey-1e30b.firebasestorage.app',
+      messagingSenderId: '945545979200',
+      appId: '1:945545979200:web:b22f89d1070ff68c1b86a5',
+      measurementId: 'G-B8PK5FY3PL'
+    };
+
+    const defaultEmployees = [
+      { name: 'Worker 1', position: 'Baker', contact: '', rate: 500, nightOvertimeRate: 80, status: 'active' },
+      { name: 'Worker 2', position: 'Helper', contact: '', rate: 450, nightOvertimeRate: 75, status: 'active' },
+      { name: 'Worker 3', position: 'Cashier', contact: '', rate: 450, nightOvertimeRate: 75, status: 'active' }
+    ];
+
+    let state = loadApp();
+    let activePage = 'dashboard';
+    const unlockedAttendanceDates = new Set();
+    let passwordModalMode = 'settings';
+    let passwordModalResolver = null;
+    let payrollUnlocked = false;
+    let cloudReady = false;
+    let applyingCloudState = false;
+    let cloudSaveTimer = null;
+    let attendanceDocRef = null;
+    let firestoreDb = null;
+    let doc;
+    let getDoc;
+    let getFirestore;
+    let initializeApp;
+    let onSnapshot;
+    let serverTimestamp;
+    let setDoc;
+
+    const pageButtons = document.querySelectorAll('[data-page-btn]');
+    const pages = document.querySelectorAll('.page');
+    const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceBody = document.getElementById('attendanceBody');
+    const attendanceLockBadge = document.getElementById('attendanceLockBadge');
+    const attendanceFinalizeBtn = document.getElementById('attendanceFinalizeBtn');
+    const attendanceOwnerEditBtn = document.getElementById('attendanceOwnerEditBtn');
+    const employeesBody = document.getElementById('employeesBody');
+    const payrollBody = document.getElementById('payrollBody');
+    const payrollRange = document.getElementById('payrollRange');
+    const historyList = document.getElementById('historyList');
+    const dashboardHistory = document.getElementById('dashboardHistory');
+    const sheetMonth = document.getElementById('sheetMonth');
+    const attendanceSheetHead = document.getElementById('attendanceSheetHead');
+    const attendanceSheetBody = document.getElementById('attendanceSheetBody');
+    const cloudStatus = document.getElementById('cloudStatus');
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    const passwordModal = document.getElementById('passwordModal');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsPasswordInput = document.getElementById('settingsPasswordInput');
+    const passwordError = document.getElementById('passwordError');
+    const restoreJsonInput = document.getElementById('restoreJsonInput');
+
+    attendanceDate.value = state.current.date;
+    sheetMonth.value = state.current.date.slice(0, 7);
+    document.getElementById('employeeStartDate').value = todayText();
+
+    function uid() {
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function todayText() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      return new Date(now.getTime() - offset * 60000).toISOString().slice(0, 10);
+    }
+
+    function safeJson(text) {
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function loadApp() {
+      const saved = safeJson(localStorage.getItem(APP_KEY));
+      if (saved && saved.current && Array.isArray(saved.employees)) {
+        return normalizeApp(saved);
+      }
+
+      const oldCurrent = safeJson(localStorage.getItem(OLD_CURRENT_KEY));
+      const oldHistory = safeJson(localStorage.getItem(OLD_HISTORY_KEY));
+      const oldRows = oldCurrent && Array.isArray(oldCurrent.rows) ? oldCurrent.rows : [];
+      const employees = oldRows.length
+        ? oldRows.map(row => ({
+            id: uid(),
+            name: row.name || 'Employee',
+            position: row.position || '',
+            contact: '',
+            startDate: todayText(),
+            rate: Number(row.rate) || 0,
+            nightOvertimeRate: Number(row.nightOvertimeRate ?? row.dayOvertimeRate ?? row.overtimeRate) || 0,
+            status: 'active'
+          }))
+        : defaultEmployees.map(item => ({ ...item, id: uid(), startDate: todayText() }));
+
+      const employeeByName = new Map(employees.map(employee => [employee.name, employee.id]));
+      const rows = oldRows.length
+        ? oldRows.map(row => normalizeRow({ ...row, employeeId: employeeByName.get(row.name) || '' }, oldCurrent.date || todayText()))
+        : employees.filter(employee => employee.status === 'active').map(employee => rowFromEmployee(employee, todayText()));
+
+      return normalizeApp({
+        employees,
+        current: { date: oldCurrent?.date || todayText(), rows },
+        history: Array.isArray(oldHistory) ? oldHistory : []
+      });
+    }
+
+    function normalizeApp(app) {
+      const date = app.current?.date || todayText();
+      const employees = (app.employees || defaultEmployees).map(employee => ({
+        id: employee.id || uid(),
+        name: employee.name || 'Employee',
+        position: employee.position || '',
+        contact: employee.contact || '',
+        startDate: employee.startDate || todayText(),
+        rate: Number(employee.rate) || 0,
+        nightOvertimeRate: Number(employee.nightOvertimeRate ?? employee.dayOvertimeRate ?? employee.overtimeRate) || 0,
+        status: employee.status === 'inactive' ? 'inactive' : 'active'
+      }));
+
+      return {
+        employees,
+        current: {
+          date,
+          rows: (app.current?.rows || []).map(row => normalizeRow(row, date))
+        },
+        history: Array.isArray(app.history) ? app.history : []
+      };
+    }
+
+    function normalizeRow(row, date) {
+      return {
+        id: row.id || uid(),
+        employeeId: row.employeeId || '',
+        date: row.date || date,
+        name: row.name || 'Employee',
+        position: row.position || '',
+        option: row.option || 'All Day',
+        timeIn: row.timeIn || '06:00',
+        timeOut: row.timeOut || '17:00',
+        regularHours: Number(row.regularHours) || 0,
+        nightOvertimeHours: Number(row.nightOvertimeHours ?? row.dayOvertimeHours ?? row.overtimeHours) || 0,
+        rate: Number(row.rate) || 0,
+        nightOvertimeRate: Number(row.nightOvertimeRate ?? row.dayOvertimeRate ?? row.overtimeRate) || 0,
+        debt: Number(row.debt) || 0,
+        notes: row.notes || ''
+      };
+    }
+
+    function rowFromEmployee(employee, date) {
+      return normalizeRow({
+        employeeId: employee.id,
+        date,
+        name: employee.name,
+        position: employee.position,
+        option: 'All Day',
+        timeIn: '06:00',
+        timeOut: '17:00',
+        regularHours: 8,
+        nightOvertimeHours: 0,
+        rate: employee.rate,
+        nightOvertimeRate: employee.nightOvertimeRate,
+        debt: 0,
+        notes: ''
+      }, date);
+    }
+
+    function saveApp() {
+      localStorage.setItem(APP_KEY, JSON.stringify(state));
+      scheduleCloudSave();
+    }
+
+    function setCloudStatus(message) {
+      cloudStatus.textContent = message;
+    }
+
+    function firebaseConfigured() {
+      return firebaseConfig.apiKey && firebaseConfig.projectId;
+    }
+
+    function cloudPayload() {
+      return JSON.parse(JSON.stringify(state));
+    }
+
+    function scheduleCloudSave() {
+      if (!cloudReady || !attendanceDocRef || applyingCloudState) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(saveAppOnline, 900);
+    }
+
+    async function saveAppOnline() {
+      if (!cloudReady || !attendanceDocRef || applyingCloudState) return;
+
+      try {
+        await setDoc(attendanceDocRef, {
+          appId: attendanceAppId,
+          state: cloudPayload(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        setCloudStatus('Online sync saved');
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Saved locally, online sync failed');
+      }
+    }
+
+    async function initFirestoreSync() {
+      if (!firebaseConfigured()) {
+        setCloudStatus('Saved locally');
+        return;
+      }
+
+      try {
+        const appModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+        const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+        initializeApp = appModule.initializeApp;
+        doc = firestoreModule.doc;
+        getDoc = firestoreModule.getDoc;
+        getFirestore = firestoreModule.getFirestore;
+        onSnapshot = firestoreModule.onSnapshot;
+        serverTimestamp = firestoreModule.serverTimestamp;
+        setDoc = firestoreModule.setDoc;
+
+        const app = initializeApp(firebaseConfig);
+        firestoreDb = getFirestore(app);
+        attendanceDocRef = doc(firestoreDb, 'bakeryApps', attendanceAppId);
+        cloudReady = true;
+
+        const cloudSnap = await getDoc(attendanceDocRef);
+        if (cloudSnap.exists() && cloudSnap.data().state) {
+          applyingCloudState = true;
+          state = normalizeApp(cloudSnap.data().state);
+          localStorage.setItem(APP_KEY, JSON.stringify(state));
+          attendanceDate.value = state.current.date;
+          sheetMonth.value = state.current.date.slice(0, 7);
+          renderAll();
+          applyingCloudState = false;
+          setCloudStatus('Online sync connected');
+        } else {
+          await saveAppOnline();
+          setCloudStatus('Online sync created');
+        }
+
+        onSnapshot(attendanceDocRef, snapshot => {
+          if (!snapshot.exists() || !snapshot.data().state || applyingCloudState) return;
+          const activeElement = document.activeElement;
+          if (activeElement && activeElement.matches('input, select, textarea')) return;
+
+          applyingCloudState = true;
+          state = normalizeApp(snapshot.data().state);
+          localStorage.setItem(APP_KEY, JSON.stringify(state));
+          attendanceDate.value = state.current.date;
+          sheetMonth.value = state.current.date.slice(0, 7);
+          renderAll();
+          applyingCloudState = false;
+          setCloudStatus('Online sync updated');
+        });
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Saved locally, Firestore not connected');
+      }
+    }
+
+    function money(value) {
+      return `PHP ${(Number(value) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function displayDate(dateText) {
+      if (!dateText) return '';
+      return new Date(`${dateText}T00:00:00`).toLocaleDateString('en-PH', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    function shortDate(dateText) {
+      if (!dateText) return '';
+      return new Date(`${dateText}T00:00:00`).toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function showConfirm({ title = 'Confirm Delete', message = 'Are you sure?', okText = 'Delete' } = {}) {
+      return new Promise(resolve => {
+        confirmModal.classList.remove('success');
+        confirmCancelBtn.style.display = '';
+        confirmTitle.textContent = title;
+        confirmMessage.textContent = message;
+        confirmOkBtn.textContent = okText;
+        confirmModal.classList.add('show');
+
+        const cleanup = answer => {
+          confirmModal.classList.remove('show');
+          confirmOkBtn.removeEventListener('click', onOk);
+          confirmCancelBtn.removeEventListener('click', onCancel);
+          confirmModal.removeEventListener('click', onBackdrop);
+          document.removeEventListener('keydown', onKeydown);
+          resolve(answer);
+        };
+
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        const onBackdrop = event => {
+          if (event.target === confirmModal) cleanup(false);
+        };
+        const onKeydown = event => {
+          if (event.key === 'Escape') cleanup(false);
+        };
+
+        confirmOkBtn.addEventListener('click', onOk);
+        confirmCancelBtn.addEventListener('click', onCancel);
+        confirmModal.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onKeydown);
+      });
+    }
+
+    function showNotice({ title = 'Saved', message = 'Done.', okText = 'OK' } = {}) {
+      return new Promise(resolve => {
+        confirmModal.classList.add('success');
+        confirmCancelBtn.style.display = 'none';
+        confirmTitle.textContent = title;
+        confirmMessage.textContent = message;
+        confirmOkBtn.textContent = okText;
+        confirmModal.classList.add('show');
+
+        const cleanup = () => {
+          confirmModal.classList.remove('show', 'success');
+          confirmCancelBtn.style.display = '';
+          confirmOkBtn.removeEventListener('click', onOk);
+          confirmModal.removeEventListener('click', onBackdrop);
+          document.removeEventListener('keydown', onKeydown);
+          resolve(true);
+        };
+
+        const onOk = () => cleanup();
+        const onBackdrop = event => {
+          if (event.target === confirmModal) cleanup();
+        };
+        const onKeydown = event => {
+          if (event.key === 'Escape' || event.key === 'Enter') cleanup();
+        };
+
+        confirmOkBtn.addEventListener('click', onOk);
+        confirmModal.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onKeydown);
+      });
+    }
+
+    function ownerPassword() {
+      return localStorage.getItem(PASSWORD_KEY) || 'admin';
+    }
+
+    function openPasswordModal() {
+      passwordModalMode = 'settings';
+      passwordModalResolver = null;
+      document.getElementById('passwordTitle').textContent = 'Owner Password';
+      passwordModal.querySelector('.modal-body p').textContent = 'Enter password to open Settings.';
+      document.getElementById('passwordOpenBtn').textContent = 'Open Settings';
+      settingsPasswordInput.value = '';
+      passwordError.style.display = 'none';
+      passwordModal.classList.add('show');
+      setTimeout(() => settingsPasswordInput.focus(), 50);
+    }
+
+    function closePasswordModal() {
+      passwordModal.classList.remove('show');
+      if (passwordModalMode === 'unlock' && passwordModalResolver) {
+        passwordModalResolver(false);
+        passwordModalResolver = null;
+      }
+      passwordModalMode = 'settings';
+    }
+
+    function openSettingsModal() {
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+      settingsModal.classList.add('show');
+    }
+
+    function closeSettingsModal() {
+      settingsModal.classList.remove('show');
+    }
+
+    function tryOpenSettings() {
+      if (passwordModalMode === 'unlock') {
+        if (settingsPasswordInput.value === ownerPassword()) {
+          const resolver = passwordModalResolver;
+          passwordModalResolver = null;
+          passwordModal.classList.remove('show');
+          passwordModalMode = 'settings';
+          if (resolver) resolver(true);
+          return;
+        }
+
+        passwordError.style.display = 'block';
+        settingsPasswordInput.select();
+        return;
+      }
+
+      if (settingsPasswordInput.value === ownerPassword()) {
+        closePasswordModal();
+        openSettingsModal();
+        return;
+      }
+
+      passwordError.style.display = 'block';
+      settingsPasswordInput.select();
+    }
+
+    function askOwnerPassword({ title = 'Owner Password', message = 'Enter owner password.' } = {}) {
+      return new Promise(resolve => {
+        passwordModalMode = 'unlock';
+        passwordModalResolver = resolve;
+        document.getElementById('passwordTitle').textContent = title;
+        passwordModal.querySelector('.modal-body p').textContent = message;
+        document.getElementById('passwordOpenBtn').textContent = 'Unlock';
+        settingsPasswordInput.value = '';
+        passwordError.style.display = 'none';
+        passwordModal.classList.add('show');
+        setTimeout(() => settingsPasswordInput.focus(), 50);
+      });
+    }
+
+    function changeSettingsPassword() {
+      const password = document.getElementById('newPasswordInput').value.trim();
+      const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
+
+      if (!password) {
+        showNotice({ title: 'Password Needed', message: 'Please enter a new password.', okText: 'OK' });
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showNotice({ title: 'Password Not Match', message: 'New password and confirm password must be the same.', okText: 'OK' });
+        return;
+      }
+
+      localStorage.setItem(PASSWORD_KEY, password);
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+      showNotice({ title: 'Password Changed', message: 'Settings password has been updated.', okText: 'OK' });
+    }
+
+    function rowPay(row) {
+      if (row.option === 'Absent' || row.option === 'Day Off') return 0;
+      const daily = Number(row.rate) || 0;
+      const regularHours = Number(row.regularHours) || 0;
+      const regularPay = row.option === 'Half Day' ? daily / 2 : daily * (regularHours / 8);
+      return regularPay + rowNightOvertimeHours(row) * rowNightOvertimeRate(row);
+    }
+
+    function rowDebt(row) {
+      return Math.max(0, Number(row.debt) || 0);
+    }
+
+    function rowSalary(row) {
+      return rowPay(row) - rowDebt(row);
+    }
+
+    function rowDays(row) {
+      if (row.option === 'Absent' || row.option === 'Day Off') return 0;
+      if (row.option === 'Half Day') return 0.5;
+      return Math.max(0, (Number(row.regularHours) || 0) / 8);
+    }
+
+    function rowNightOvertimeHours(row) {
+      return Number(row.nightOvertimeHours ?? row.dayOvertimeHours ?? row.overtimeHours) || 0;
+    }
+
+    function rowNightOvertimeRate(row) {
+      return Number(row.nightOvertimeRate ?? row.dayOvertimeRate ?? row.overtimeRate) || 0;
+    }
+
+    function rowOvertimeHours(row) {
+      return rowNightOvertimeHours(row);
+    }
+
+    function totalsForRows(rows) {
+      return {
+        allDay: rows.filter(row => row.option === 'All Day').length,
+        halfDay: rows.filter(row => row.option === 'Half Day').length,
+        overtime: rows.filter(row => row.option === 'Overtime' || rowOvertimeHours(row) > 0).length,
+        absent: rows.filter(row => row.option === 'Absent').length,
+        dayOff: rows.filter(row => row.option === 'Day Off').length,
+        gross: rows.reduce((sum, row) => sum + rowPay(row), 0),
+        debt: rows.reduce((sum, row) => sum + rowDebt(row), 0),
+        salary: rows.reduce((sum, row) => sum + rowSalary(row), 0)
+      };
+    }
+
+    async function requestPayrollAccess() {
+      if (payrollUnlocked) return true;
+
+      const unlocked = await askOwnerPassword({
+        title: 'Payroll Password',
+        message: 'Enter owner password to open Payroll.'
+      });
+
+      if (unlocked) {
+        payrollUnlocked = true;
+        return true;
+      }
+
+      return false;
+    }
+
+    function switchPage(page) {
+      activePage = page;
+      pageButtons.forEach(button => button.classList.toggle('active', button.dataset.pageBtn === page));
+      pages.forEach(section => section.classList.toggle('active', section.id === `page-${page}`));
+      if (page === 'payroll') generatePayroll();
+      if (page === 'sheet') renderAttendanceSheet();
+      renderAll();
+    }
+
+    async function openPage(page) {
+      if (page === 'payroll') {
+        const allowed = await requestPayrollAccess();
+        if (!allowed) return;
+      }
+
+      switchPage(page);
+    }
+
+    function renderAll() {
+      attendanceDate.value = state.current.date;
+      renderDashboard();
+      renderAttendance();
+      renderEmployees();
+      renderHistory();
+      if (activePage === 'payroll') generatePayroll();
+      if (activePage === 'sheet') renderAttendanceSheet();
+      saveApp();
+    }
+
+    function renderDashboard() {
+      const totals = totalsForRows(state.current.rows);
+      document.getElementById('dashAllDay').textContent = totals.allDay;
+      document.getElementById('dashHalfDay').textContent = totals.halfDay;
+      document.getElementById('dashOvertime').textContent = totals.overtime;
+      document.getElementById('dashAbsent').textContent = totals.absent;
+      document.getElementById('dashDayOff').textContent = totals.dayOff;
+      document.getElementById('dashGross').textContent = money(totals.gross);
+      document.getElementById('dashDebt').textContent = money(totals.debt);
+      document.getElementById('dashSalary').textContent = money(totals.salary);
+      document.getElementById('dashEmployees').textContent = state.employees.filter(employee => employee.status === 'active').length;
+
+      const recent = state.history.slice(0, 3);
+      dashboardHistory.innerHTML = recent.length
+        ? recent.map(report => `
+            <div class="card">
+              <div class="card-row">
+                <strong>${displayDate(report.date)}</strong>
+                <span class="badge">Saved</span>
+              </div>
+              <p class="hint">Salary: ${money(report.totals?.salary ?? report.totals?.payroll ?? 0)}</p>
+            </div>
+          `).join('')
+        : '<div class="empty">No saved attendance yet.</div>';
+    }
+
+    function statusClass(option) {
+      if (option === 'Half Day') return 'half';
+      if (option === 'Overtime') return 'ot';
+      if (option === 'Absent') return 'absent';
+      if (option === 'Day Off') return 'dayoff';
+      return 'all';
+    }
+
+    function applyOptionDefaults(row) {
+      if (row.option === 'All Day') {
+        row.regularHours = 8;
+        row.nightOvertimeHours = 0;
+      }
+      if (row.option === 'Half Day') {
+        row.regularHours = 4;
+        row.nightOvertimeHours = 0;
+      }
+      if (row.option === 'Overtime') {
+        row.regularHours = 8;
+        row.nightOvertimeHours = Number(row.nightOvertimeHours) || 1;
+      }
+      if (row.option === 'Absent') {
+        row.regularHours = 0;
+        row.nightOvertimeHours = 0;
+      }
+      if (row.option === 'Day Off') {
+        row.regularHours = 0;
+        row.nightOvertimeHours = 0;
+      }
+    }
+
+    function finalizedReportForDate(date) {
+      return state.history.find(report => report.id === date || report.date === date);
+    }
+
+    function isAttendanceLocked() {
+      return Boolean(finalizedReportForDate(state.current.date)) && !unlockedAttendanceDates.has(state.current.date);
+    }
+
+    function renderAttendanceLockState() {
+      const finalized = Boolean(finalizedReportForDate(state.current.date));
+      const locked = isAttendanceLocked();
+
+      attendanceLockBadge.style.display = finalized ? '' : 'none';
+      attendanceLockBadge.className = locked ? 'badge red' : 'badge blue';
+      attendanceLockBadge.textContent = locked ? 'Finalized / Locked' : finalized ? 'Owner Editing' : 'Open';
+      attendanceOwnerEditBtn.style.display = locked ? '' : 'none';
+      attendanceFinalizeBtn.textContent = finalized && !locked ? 'Save Changes' : 'Finalize Day';
+      attendanceFinalizeBtn.disabled = locked;
+    }
+
+    function renderAttendance() {
+      const rows = state.current.rows;
+      renderAttendanceLockState();
+      if (!rows.length) {
+        attendanceBody.innerHTML = '<tr><td colspan="12" class="empty">No workers yet. Add a row or add active employees.</td></tr>';
+        return;
+      }
+
+      const locked = isAttendanceLocked();
+      const disabled = locked ? 'disabled' : '';
+      attendanceBody.innerHTML = rows.map(row => `
+        <tr data-row-id="${row.id}">
+          <td class="date-cell">${shortDate(state.current.date)}</td>
+          <td><input class="name-input" data-row-field="name" value="${escapeHtml(row.name)}" ${disabled}></td>
+          <td><input class="position-input" data-row-field="position" value="${escapeHtml(row.position)}" ${disabled}></td>
+          <td>
+            <select class="status ${statusClass(row.option)}" data-row-field="option" ${disabled}>
+              ${['All Day', 'Half Day', 'Overtime', 'Absent', 'Day Off'].map(option => `<option value="${option}" ${row.option === option ? 'selected' : ''}>${option}</option>`).join('')}
+            </select>
+          </td>
+          <td><input class="small" type="number" min="0" step="0.5" data-row-field="nightOvertimeHours" value="${rowNightOvertimeHours(row)}" ${disabled}></td>
+          <td><input class="money" type="number" min="0" step="0.01" data-row-field="rate" value="${Number(row.rate) || 0}" ${disabled}></td>
+          <td><input class="money" type="number" min="0" step="0.01" data-row-field="nightOvertimeRate" value="${rowNightOvertimeRate(row)}" ${disabled}></td>
+          <td class="computed blue" data-row-total="gross">${money(rowPay(row))}</td>
+          <td><input class="money" type="number" min="0" step="0.01" data-row-field="debt" value="${Number(row.debt) || 0}" ${disabled}></td>
+          <td class="computed" data-row-total="salary">${money(rowSalary(row))}</td>
+          <td><input class="note-input" data-row-field="notes" placeholder="Note" value="${escapeHtml(row.notes)}" ${disabled}></td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" data-row-action="copy" title="Copy row" ${disabled}>+</button>
+              <button class="icon-btn red" data-row-action="remove" title="Remove row" ${disabled}>X</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateRowTotalCells(tr, row) {
+      const gross = tr.querySelector('[data-row-total="gross"]');
+      const salary = tr.querySelector('[data-row-total="salary"]');
+      if (gross) gross.textContent = money(rowPay(row));
+      if (salary) salary.textContent = money(rowSalary(row));
+    }
+
+    function addAttendanceRow(employee) {
+      const row = employee ? rowFromEmployee(employee, state.current.date) : normalizeRow({
+        date: state.current.date,
+        name: 'New Employee',
+        position: '',
+        option: 'All Day',
+        regularHours: 8,
+        rate: 0,
+        nightOvertimeRate: 0
+      }, state.current.date);
+      state.current.rows.push(row);
+      renderAll();
+    }
+
+    function addActiveEmployeesToAttendance() {
+      const existing = new Set(state.current.rows.map(row => row.employeeId).filter(Boolean));
+      state.employees
+        .filter(employee => employee.status === 'active' && !existing.has(employee.id))
+        .forEach(employee => state.current.rows.push(rowFromEmployee(employee, state.current.date)));
+      renderAll();
+    }
+
+    function employeeKeyFromRow(row) {
+      return row.employeeId || `name:${String(row.name || '').trim().toLowerCase()}`;
+    }
+
+    function monthDayCount(monthText) {
+      const [year, month] = monthText.split('-').map(Number);
+      return new Date(year, month, 0).getDate();
+    }
+
+    function reportsByDateForMonth(monthText) {
+      const reports = new Map();
+      state.history
+        .filter(report => report.date && report.date.slice(0, 7) === monthText)
+        .forEach(report => reports.set(report.date, report.rows || []));
+
+      if (state.current.date && state.current.date.slice(0, 7) === monthText) {
+        reports.set(state.current.date, state.current.rows);
+      }
+
+      return reports;
+    }
+
+    function sheetEmployeeList(reports) {
+      const employees = new Map();
+      state.employees.forEach(employee => {
+        employees.set(employee.id, {
+          key: employee.id,
+          name: employee.name,
+          position: employee.position
+        });
+      });
+
+      reports.forEach(rows => {
+        rows.forEach(row => {
+          const key = employeeKeyFromRow(row);
+          if (!employees.has(key)) {
+            employees.set(key, {
+              key,
+              name: row.name || 'No Name',
+              position: row.position || ''
+            });
+          }
+        });
+      });
+
+      return [...employees.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function sheetStatus(row) {
+      if (!row) return { text: '-', className: '' };
+      if (row.option === 'Half Day') return { text: 'H', className: 'half' };
+      if (row.option === 'Absent') return { text: 'X', className: 'absent' };
+      if (row.option === 'Day Off') return { text: 'D', className: 'dayoff' };
+      if (row.option === 'Overtime' || rowOvertimeHours(row) > 0) return { text: 'OT', className: 'ot' };
+      return { text: 'A', className: 'all' };
+    }
+
+    function renderAttendanceSheet() {
+      const monthText = sheetMonth.value || state.current.date.slice(0, 7);
+      const days = monthDayCount(monthText);
+      const reports = reportsByDateForMonth(monthText);
+      const employees = sheetEmployeeList(reports);
+
+      attendanceSheetHead.innerHTML = `
+        <tr>
+          <th class="sheet-name">Employee</th>
+          ${Array.from({ length: days }, (_, index) => `<th>${index + 1}</th>`).join('')}
+          <th>Total Days</th>
+          <th>Night OT</th>
+          <th>Salary</th>
+        </tr>
+      `;
+
+      if (!employees.length) {
+        attendanceSheetBody.innerHTML = `<tr><td colspan="${days + 4}" class="empty">No employees or attendance records for this month.</td></tr>`;
+        return;
+      }
+
+      attendanceSheetBody.innerHTML = employees.map(employee => {
+        let totalDays = 0;
+        let totalNightOt = 0;
+        let totalSalary = 0;
+
+        const dayCells = Array.from({ length: days }, (_, index) => {
+          const day = String(index + 1).padStart(2, '0');
+          const date = `${monthText}-${day}`;
+          const rows = reports.get(date) || [];
+          const row = rows.find(item => employeeKeyFromRow(item) === employee.key || String(item.name || '').trim().toLowerCase() === employee.name.trim().toLowerCase());
+          const status = sheetStatus(row);
+
+          if (row) {
+            totalDays += rowDays(row);
+            totalNightOt += rowNightOvertimeHours(row);
+            totalSalary += rowSalary(row);
+          }
+
+          return `<td><span class="sheet-cell ${status.className}" title="${escapeHtml(row?.option || 'No record')}">${status.text}</span></td>`;
+        }).join('');
+
+        return `
+          <tr>
+            <td class="sheet-name">
+              ${escapeHtml(employee.name)}
+              <p class="hint">${escapeHtml(employee.position || '')}</p>
+            </td>
+            ${dayCells}
+            <td><strong>${totalDays.toFixed(2)}</strong></td>
+            <td><strong>${totalNightOt.toFixed(2)}</strong></td>
+            <td><strong>${money(totalSalary)}</strong></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function attendanceSheetCsv() {
+      const monthText = sheetMonth.value || state.current.date.slice(0, 7);
+      const days = monthDayCount(monthText);
+      const reports = reportsByDateForMonth(monthText);
+      const employees = sheetEmployeeList(reports);
+      const header = ['Employee', ...Array.from({ length: days }, (_, index) => String(index + 1)), 'Total Days', 'Night OT', 'Salary'];
+
+      const rows = employees.map(employee => {
+        let totalDays = 0;
+        let totalNightOt = 0;
+        let totalSalary = 0;
+        const dayValues = Array.from({ length: days }, (_, index) => {
+          const date = `${monthText}-${String(index + 1).padStart(2, '0')}`;
+          const reportRows = reports.get(date) || [];
+          const row = reportRows.find(item => employeeKeyFromRow(item) === employee.key || String(item.name || '').trim().toLowerCase() === employee.name.trim().toLowerCase());
+          const status = sheetStatus(row).text;
+          if (row) {
+            totalDays += rowDays(row);
+            totalNightOt += rowNightOvertimeHours(row);
+            totalSalary += rowSalary(row);
+          }
+          return status === '-' ? '' : status;
+        });
+
+        return [employee.name, ...dayValues, totalDays.toFixed(2), totalNightOt.toFixed(2), totalSalary.toFixed(2)];
+      });
+
+      return [header, ...rows].map(items => items.map(item => `"${String(item ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+    }
+
+    function renderEmployees() {
+      const activeCount = state.employees.filter(employee => employee.status === 'active').length;
+      document.getElementById('employeeCountBadge').textContent = `${activeCount} Active`;
+
+      if (!state.employees.length) {
+        employeesBody.innerHTML = '<tr><td colspan="8" class="empty">No employees yet.</td></tr>';
+        return;
+      }
+
+      employeesBody.innerHTML = state.employees.map(employee => `
+        <tr data-employee-id="${employee.id}">
+          <td><input class="name-input" data-employee-field="name" value="${escapeHtml(employee.name)}"></td>
+          <td><input data-employee-field="position" value="${escapeHtml(employee.position)}"></td>
+          <td><input data-employee-field="contact" value="${escapeHtml(employee.contact)}"></td>
+          <td><input type="date" data-employee-field="startDate" value="${escapeHtml(employee.startDate)}"></td>
+          <td><input class="money" type="number" min="0" step="0.01" data-employee-field="rate" value="${Number(employee.rate) || 0}"></td>
+          <td><input class="money" type="number" min="0" step="0.01" data-employee-field="nightOvertimeRate" value="${Number(employee.nightOvertimeRate) || 0}"></td>
+          <td>
+            <select data-employee-field="status">
+              <option value="active" ${employee.status === 'active' ? 'selected' : ''}>Active</option>
+              <option value="inactive" ${employee.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+            </select>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" data-employee-action="attendance" title="Add to attendance">+</button>
+              <button class="icon-btn red" data-employee-action="remove" title="Remove employee">X</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addEmployee() {
+      const name = document.getElementById('employeeName').value.trim();
+      if (!name) {
+        alert('Please enter employee name.');
+        return;
+      }
+
+      const employee = {
+        id: uid(),
+        name,
+        position: document.getElementById('employeePosition').value.trim(),
+        contact: document.getElementById('employeeContact').value.trim(),
+        startDate: document.getElementById('employeeStartDate').value || todayText(),
+        rate: Number(document.getElementById('employeeRate').value) || 0,
+        nightOvertimeRate: Number(document.getElementById('employeeNightOtRate').value) || 0,
+        status: document.getElementById('employeeStatus').value
+      };
+
+      state.employees.push(employee);
+      if (employee.status === 'active') state.current.rows.push(rowFromEmployee(employee, state.current.date));
+
+      ['employeeName', 'employeePosition', 'employeeContact', 'employeeRate', 'employeeNightOtRate'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('employeeStatus').value = 'active';
+      renderAll();
+    }
+
+    function updateEmployeeRows(employee) {
+      state.current.rows.forEach(row => {
+        if (row.employeeId === employee.id) {
+          row.name = employee.name;
+          row.position = employee.position;
+          row.rate = employee.rate;
+          row.nightOvertimeRate = employee.nightOvertimeRate;
+        }
+      });
+    }
+
+    function finalizeDay() {
+      const date = state.current.date;
+      const totals = totalsForRows(state.current.rows);
+      const report = {
+        id: date,
+        date,
+        savedAt: new Date().toISOString(),
+        rows: state.current.rows.map(row => ({ ...row, date })),
+        totals
+      };
+
+      state.history = [report, ...state.history.filter(item => item.id !== date)];
+      unlockedAttendanceDates.delete(date);
+      saveApp();
+      renderAll();
+      showNotice({
+        title: 'Report Finalized',
+        message: `Attendance report for ${displayDate(date)} has been saved to History.`,
+        okText: 'OK'
+      });
+    }
+
+    function newDay() {
+      const nextDate = prompt('Enter date for new attendance:', todayText());
+      if (!nextDate) return;
+      state.current.date = nextDate;
+      const report = finalizedReportForDate(nextDate);
+      state.current.rows = report
+        ? (report.rows || []).map(row => normalizeRow({ ...row, id: uid() }, report.date))
+        : state.employees
+          .filter(employee => employee.status === 'active')
+          .map(employee => rowFromEmployee(employee, nextDate));
+      switchPage('attendance');
+    }
+
+    async function unlockAttendanceForOwner() {
+      const unlocked = await askOwnerPassword({
+        title: 'Owner Edit',
+        message: 'Enter owner password to edit this finalized attendance report.'
+      });
+      if (!unlocked) return;
+
+      unlockedAttendanceDates.add(state.current.date);
+      renderAll();
+      showNotice({
+        title: 'Editing Unlocked',
+        message: 'This finalized report can now be edited. Click Save Changes when done.',
+        okText: 'OK'
+      });
+    }
+
+    function isPayrollPeriodRange(range) {
+      return range === 'firstHalf' || range === 'secondHalf';
+    }
+
+    function payrollRowsForRange(range) {
+      const todayRows = state.current.rows.map(row => ({ ...row, date: state.current.date }));
+      if (range === 'today') return todayRows;
+
+      const savedRows = state.history
+        .filter(report => {
+          if (range !== 'month' && !isPayrollPeriodRange(range)) return true;
+          return report.date && report.date.slice(0, 7) === state.current.date.slice(0, 7);
+        })
+        .flatMap(report => (report.rows || []).map(row => ({ ...row, date: report.date })));
+
+      const hasSavedToday = savedRows.some(row => row.date === state.current.date);
+      const rows = isPayrollPeriodRange(range) || hasSavedToday ? savedRows : [...savedRows, ...todayRows];
+
+      if (isPayrollPeriodRange(range)) {
+        return rows.filter(row => {
+          const day = Number(row.date.slice(8, 10));
+          return range === 'firstHalf' ? day >= 1 && day <= 15 : day >= 16;
+        });
+      }
+
+      return rows;
+    }
+
+    function generatePayroll() {
+      const rows = payrollRowsForRange(payrollRange.value);
+      const employees = new Map();
+
+      rows.forEach(row => {
+        const name = (row.name || 'No Name').trim() || 'No Name';
+        if (!employees.has(name)) {
+          employees.set(name, {
+            name,
+            days: 0,
+            nightOvertimeHours: 0,
+            rate: 0,
+            gross: 0,
+            debt: 0,
+            salary: 0
+          });
+        }
+
+        const employee = employees.get(name);
+        employee.days += rowDays(row);
+        employee.nightOvertimeHours += rowNightOvertimeHours(row);
+        employee.rate = Number(row.rate) || employee.rate;
+        employee.gross += rowPay(row);
+        employee.debt += rowDebt(row);
+        employee.salary += rowSalary(row);
+      });
+
+      const list = [...employees.values()].sort((a, b) => a.name.localeCompare(b.name));
+      const gross = list.reduce((sum, employee) => sum + employee.gross, 0);
+      const debt = list.reduce((sum, employee) => sum + employee.debt, 0);
+      const salary = list.reduce((sum, employee) => sum + employee.salary, 0);
+
+      document.getElementById('payrollGrandTotal').textContent = money(salary);
+      document.getElementById('payGross').textContent = money(gross);
+      document.getElementById('payDebt').textContent = money(debt);
+      document.getElementById('paySalary').textContent = money(salary);
+
+      payrollBody.innerHTML = list.length
+        ? list.map(employee => `
+            <tr>
+              <td><strong>${escapeHtml(employee.name)}</strong></td>
+              <td>${employee.days.toFixed(2)}</td>
+              <td>${employee.nightOvertimeHours.toFixed(2)}</td>
+              <td>${money(employee.rate)}</td>
+              <td>${money(employee.gross)}</td>
+              <td>${money(employee.debt)}</td>
+              <td><strong>${money(employee.salary)}</strong></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="7" class="empty">No payroll data yet.</td></tr>';
+    }
+
+    function renderHistory() {
+      if (!state.history.length) {
+        historyList.innerHTML = '<div class="empty">No finalized attendance yet.</div>';
+        return;
+      }
+
+      historyList.innerHTML = state.history.map(report => `
+        <div class="card" data-history-id="${report.id}">
+          <div class="card-row">
+            <div>
+              <strong>${displayDate(report.date)}</strong>
+              <p class="hint">All Day: ${report.totals?.allDay || 0} | Half Day: ${report.totals?.halfDay || 0} | Overtime: ${report.totals?.overtime || 0} | Absent: ${report.totals?.absent || 0} | Day Off: ${report.totals?.dayOff || 0}</p>
+              <p class="hint">Gross: ${money(report.totals?.gross ?? report.totals?.payroll ?? 0)} | Debt: ${money(report.totals?.debt || 0)} | Salary: ${money(report.totals?.salary ?? report.totals?.payroll ?? 0)}</p>
+            </div>
+            <div class="actions">
+              <button class="btn light" data-history-action="view">View</button>
+              <button class="btn black" data-history-action="csv">CSV</button>
+              <button class="btn red" data-history-action="delete">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function viewHistory(id) {
+      const report = state.history.find(item => item.id === id);
+      if (!report) return;
+      state.current.date = report.date;
+      state.current.rows = report.rows.map(row => normalizeRow({ ...row, id: uid() }, report.date));
+      switchPage('attendance');
+    }
+
+    async function deleteHistory(id) {
+      const confirmed = await showConfirm({
+        title: 'Delete History Report',
+        message: 'This will delete this saved attendance report from history.',
+        okText: 'Delete Report'
+      });
+      if (!confirmed) return;
+      state.history = state.history.filter(item => item.id !== id);
+      renderAll();
+    }
+
+    function rowsToCsv(rows, date) {
+      const header = ['Date', 'Name', 'Position', 'Option', 'Days', 'Night OT Hours', 'Daily Rate', 'Night OT Rate', 'Gross Pay', 'Debt', 'Total Salary', 'Notes'];
+      const body = rows.map(row => [
+        date || row.date,
+        row.name,
+        row.position,
+        row.option,
+        rowDays(row).toFixed(2),
+        rowNightOvertimeHours(row),
+        row.rate,
+        rowNightOvertimeRate(row),
+        rowPay(row).toFixed(2),
+        rowDebt(row).toFixed(2),
+        rowSalary(row).toFixed(2),
+        row.notes
+      ]);
+      return [header, ...body].map(items => items.map(item => `"${String(item ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+    }
+
+    function downloadCsv(filename, csv) {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function downloadJson(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function backupJson() {
+      saveApp();
+      downloadJson(`attendance-backup-${todayText()}.json`, {
+        appName: 'Attendance & Payroll',
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        state,
+        settingsPassword: ownerPassword()
+      });
+      showNotice({ title: 'Backup Downloaded', message: 'Your attendance backup JSON has been downloaded.', okText: 'OK' });
+    }
+
+    async function restoreJsonFile(file) {
+      if (!file) return;
+
+      const confirmed = await showConfirm({
+        title: 'Restore Backup',
+        message: 'This will replace current attendance data with the selected JSON backup.',
+        okText: 'Restore'
+      });
+      if (!confirmed) return;
+
+      const text = await file.text();
+      const data = safeJson(text);
+      if (!data) {
+        showNotice({ title: 'Restore Failed', message: 'The selected file is not valid JSON.', okText: 'OK' });
+        return;
+      }
+
+      const restoredState = data.state || data;
+      if (!restoredState.current || !Array.isArray(restoredState.employees)) {
+        showNotice({ title: 'Restore Failed', message: 'This JSON file does not look like an attendance backup.', okText: 'OK' });
+        return;
+      }
+
+      state = normalizeApp(restoredState);
+      if (data.settingsPassword) {
+        localStorage.setItem(PASSWORD_KEY, String(data.settingsPassword));
+      }
+      saveApp();
+      attendanceDate.value = state.current.date;
+      sheetMonth.value = state.current.date.slice(0, 7);
+      renderAll();
+      showNotice({ title: 'Restore Complete', message: 'Backup data has been restored successfully.', okText: 'OK' });
+    }
+
+    pageButtons.forEach(button => button.addEventListener('click', () => openPage(button.dataset.pageBtn)));
+    document.querySelectorAll('[data-open-page]').forEach(button => button.addEventListener('click', () => openPage(button.dataset.openPage)));
+
+    document.getElementById('settingsGearBtn').addEventListener('click', openPasswordModal);
+    document.getElementById('passwordCancelBtn').addEventListener('click', closePasswordModal);
+    document.getElementById('passwordOpenBtn').addEventListener('click', tryOpenSettings);
+    document.getElementById('settingsCloseBtn').addEventListener('click', closeSettingsModal);
+    document.getElementById('changePasswordBtn').addEventListener('click', changeSettingsPassword);
+    document.getElementById('backupJsonBtn').addEventListener('click', backupJson);
+    document.getElementById('restoreJsonBtn').addEventListener('click', () => restoreJsonInput.click());
+    restoreJsonInput.addEventListener('change', event => {
+      restoreJsonFile(event.target.files[0]);
+      event.target.value = '';
+    });
+    settingsPasswordInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') tryOpenSettings();
+    });
+    passwordModal.addEventListener('click', event => {
+      if (event.target === passwordModal) closePasswordModal();
+    });
+    settingsModal.addEventListener('click', event => {
+      if (event.target === settingsModal) closeSettingsModal();
+    });
+    document.getElementById('historyFinalizeBtn').addEventListener('click', finalizeDay);
+    document.getElementById('attendanceFinalizeBtn').addEventListener('click', finalizeDay);
+    document.getElementById('attendanceOwnerEditBtn').addEventListener('click', unlockAttendanceForOwner);
+    document.getElementById('attendanceNewDateBtn').addEventListener('click', newDay);
+    document.getElementById('renderSheetBtn').addEventListener('click', renderAttendanceSheet);
+    document.getElementById('sheetCsvBtn').addEventListener('click', () => downloadCsv(`attendance-sheet-${sheetMonth.value || state.current.date.slice(0, 7)}.csv`, attendanceSheetCsv()));
+    sheetMonth.addEventListener('change', renderAttendanceSheet);
+    document.getElementById('addEmployeeBtn').addEventListener('click', addEmployee);
+    document.getElementById('generatePayrollBtn').addEventListener('click', generatePayroll);
+    payrollRange.addEventListener('change', generatePayroll);
+    document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
+      const confirmed = await showConfirm({
+        title: 'Clear All History',
+        message: 'This will delete all saved attendance history. Current attendance will stay.',
+        okText: 'Clear History'
+      });
+      if (!confirmed) return;
+      state.history = [];
+      renderAll();
+    });
+
+    attendanceDate.addEventListener('change', () => {
+      state.current.date = attendanceDate.value || todayText();
+      const report = finalizedReportForDate(state.current.date);
+      if (report) {
+        state.current.rows = (report.rows || []).map(row => normalizeRow({ ...row, id: uid() }, report.date));
+      }
+      sheetMonth.value = state.current.date.slice(0, 7);
+      state.current.rows.forEach(row => row.date = state.current.date);
+      renderAll();
+    });
+
+    attendanceBody.addEventListener('input', event => {
+      if (isAttendanceLocked()) return;
+      const input = event.target.closest('[data-row-field]');
+      if (!input) return;
+      const tr = input.closest('[data-row-id]');
+      const row = state.current.rows.find(item => item.id === tr.dataset.rowId);
+      if (!row) return;
+      const field = input.dataset.rowField;
+      row[field] = ['regularHours', 'nightOvertimeHours', 'rate', 'nightOvertimeRate', 'debt'].includes(field) ? Number(input.value) || 0 : input.value;
+      updateRowTotalCells(tr, row);
+      renderDashboard();
+      saveApp();
+    });
+
+    attendanceBody.addEventListener('change', event => {
+      if (isAttendanceLocked()) return;
+      const input = event.target.closest('[data-row-field]');
+      if (!input) return;
+      const tr = input.closest('[data-row-id]');
+      const row = state.current.rows.find(item => item.id === tr.dataset.rowId);
+      if (!row) return;
+      if (input.dataset.rowField === 'option') {
+        applyOptionDefaults(row);
+        renderAll();
+      }
+    });
+
+    attendanceBody.addEventListener('click', async event => {
+      if (isAttendanceLocked()) return;
+      const button = event.target.closest('[data-row-action]');
+      if (!button) return;
+      const tr = button.closest('[data-row-id]');
+      const row = state.current.rows.find(item => item.id === tr.dataset.rowId);
+      if (!row) return;
+      if (button.dataset.rowAction === 'copy') {
+        state.current.rows.push(normalizeRow({ ...row, id: uid(), name: `${row.name} Copy` }, state.current.date));
+      }
+      if (button.dataset.rowAction === 'remove') {
+        const confirmed = await showConfirm({
+          title: 'Remove Attendance Row',
+          message: `Remove ${row.name || 'this employee'} from today's attendance?`,
+          okText: 'Remove Row'
+        });
+        if (!confirmed) return;
+        state.current.rows = state.current.rows.filter(item => item.id !== row.id);
+      }
+      renderAll();
+    });
+
+    employeesBody.addEventListener('input', event => {
+      const input = event.target.closest('[data-employee-field]');
+      if (!input) return;
+      const tr = input.closest('[data-employee-id]');
+      const employee = state.employees.find(item => item.id === tr.dataset.employeeId);
+      if (!employee) return;
+      const field = input.dataset.employeeField;
+      employee[field] = ['rate', 'nightOvertimeRate'].includes(field) ? Number(input.value) || 0 : input.value;
+      updateEmployeeRows(employee);
+      saveApp();
+    });
+
+    employeesBody.addEventListener('change', event => {
+      const input = event.target.closest('[data-employee-field]');
+      if (!input) return;
+      const tr = input.closest('[data-employee-id]');
+      const employee = state.employees.find(item => item.id === tr.dataset.employeeId);
+      if (!employee) return;
+      employee[input.dataset.employeeField] = input.value;
+      updateEmployeeRows(employee);
+      renderAll();
+    });
+
+    employeesBody.addEventListener('click', async event => {
+      const button = event.target.closest('[data-employee-action]');
+      if (!button) return;
+      const tr = button.closest('[data-employee-id]');
+      const employee = state.employees.find(item => item.id === tr.dataset.employeeId);
+      if (!employee) return;
+      if (button.dataset.employeeAction === 'attendance') {
+        addAttendanceRow(employee);
+      }
+      if (button.dataset.employeeAction === 'remove') {
+        const confirmed = await showConfirm({
+          title: 'Remove Employee',
+          message: `Remove ${employee.name || 'this employee'} from employee profiles? Attendance history will stay saved.`,
+          okText: 'Remove Employee'
+        });
+        if (!confirmed) return;
+        state.employees = state.employees.filter(item => item.id !== employee.id);
+        renderAll();
+      }
+    });
+
+    historyList.addEventListener('click', async event => {
+      const button = event.target.closest('[data-history-action]');
+      if (!button) return;
+      const card = button.closest('[data-history-id]');
+      const report = state.history.find(item => item.id === card.dataset.historyId);
+      if (!report) return;
+      if (button.dataset.historyAction === 'view') viewHistory(report.id);
+      if (button.dataset.historyAction === 'delete') await deleteHistory(report.id);
+      if (button.dataset.historyAction === 'csv') downloadCsv(`attendance-${report.date}.csv`, rowsToCsv(report.rows, report.date));
+    });
+
+    renderAll();
+    initFirestoreSync();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
