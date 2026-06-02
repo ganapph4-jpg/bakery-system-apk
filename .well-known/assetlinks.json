@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.mamaslove.laundry",
+    "sha256_cert_fingerprints": ["12:47:4F:94:90:54:18:F4:AC:6C:24:F2:90:34:D2:F3:A6:38:B6:80:A0:D8:7B:3B:C6:D2:EF:FD:2C:B2:CB:5B"]
+  }
+}]
